@@ -1386,6 +1386,9 @@ void trigger_push_gone (void)
 
 void() trigger_push_touch =
 {
+	if(self.inactive)
+		return;
+
 	if(self.spawnflags&PUSH_SHEEP && other.model=="models/sheep.mdl")
 		return;
 	if (other.health > 0)

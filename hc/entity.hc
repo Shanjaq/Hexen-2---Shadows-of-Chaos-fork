@@ -315,6 +315,44 @@ void end_sys_fields;
 		float act_state;		// Anim info
 		float raven_cnt;		// Number of raven's this guys has in the world
 		float newclass;			// If doing a quick class change
+// Peanut ALL NEW CODE
+		float mage;
+		float elemana;
+		float menuhand;
+		float menuitem;
+		float handy;
+		float click;
+		float handy;
+		float modding;
+		float trap_count;
+		float fingery;
+		float Lfinger;
+		float Rfinger;
+		float Lspell;
+		float Rspell;
+		float Lsupport;
+		float Rsupport;
+		float spelltop;
+		float spellcost;
+		float Lfinger1S, Lfinger2S, Lfinger3S, Lfinger4S, Lfinger5S;
+		float Rfinger1S, Rfinger2S, Rfinger3S, Rfinger4S, Rfinger5S;
+		float Lfinger1Support, Lfinger2Support, Lfinger3Support, Lfinger4Support, Lfinger5Support;
+		float Rfinger1Support, Rfinger2Support, Rfinger3Support, Rfinger4Support, Rfinger5Support;
+		float LfingerC;
+		float RfingerC;
+		float predebt;
+		float debt;
+		float money;
+		float sheep;
+		float arrows;
+		float shopping;
+		float sale;
+		float choice;
+		float selection;
+		float inv_spellmods;
+		float tele_dropped;
+		float charsaved;
+// Peanut End of new code
 	};
 	struct
 	{ // Fallen Angel
@@ -466,6 +504,61 @@ void end_sys_fields;
 	{	// Cube of force
 		float shot_cnt;   // Number of shots the force cube has shot
 	};
+// Peanut ALL NEW CODE
+	//Status Effect Controller
+	struct
+	{
+		//base interval
+		float burn_time;
+		float poison_time;
+		float wet_time;
+		float toxic_time;
+		float paralyze_time;
+		
+		//next interval
+		float burn_next;
+		float poison_next;
+		float toxic_next;
+		
+		//intensity
+		float burn_dmg;
+		float poison_dmg;
+		float toxic_dmg;
+		
+		//stacking
+		float burn_cnt;
+		float poison_cnt;
+		
+		//duration
+		float burn_duration;
+		float poison_duration;
+	};
+	// misc fields
+	struct
+	{
+		float menubar_type;
+		float step1;
+		float step2;
+		float step3;
+		float step4;
+	};
+	// cloud fields
+	struct
+	{
+		float type_index;
+		float cloud_style;
+		float cloud_height;
+		float glow_dest;
+		float glow_last;
+		float glow_delay;
+		float glow_time;
+		float melee_rate_low;
+		float melee_rate_high;
+		float missile_rate_low;
+		float missile_rate_high;
+		float missile_count;
+	};
+// Peanut End of new code
 };
 
 // Once we can do unions above end_sys, have this with the field 'playerclass'
@@ -715,7 +808,7 @@ entity	sight_entity;	//So monsters wake up other monsters
 .float anglespeed;
 .float angletime;
 .float movetime;
-//.float hit_z;		unused
+.float hit_z;
 .float torncount;
 .entity path_last;
 .float dflags;

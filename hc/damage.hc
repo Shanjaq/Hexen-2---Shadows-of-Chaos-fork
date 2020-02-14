@@ -174,6 +174,12 @@ void(entity targ, entity attacker, entity inflictor) Killed =
 	oself = self;
 	self = targ;
 
+	if (targ.experience_value >= 25)
+	{
+		if (targ.flags & FL_MONSTER && targ.flags2 & FL_ALIVE)
+		ThrowMoney(targ);
+	}
+	
 	if(!self.flags2&FL_ALIVE)
 		if (self.movetype == MOVETYPE_PUSH || self.movetype == MOVETYPE_NONE)
 		{	// doors, triggers, etc

@@ -29,6 +29,7 @@ void() W_Precache =
 	precache_model ("models/faspell.mdl");
 	precache_model ("models/star.mdl");
 	precache_model ("models/proj_lt.mdl");
+	Precache_Magic();
 	
 	//ws: precache monsters used by sickle monster summoning function
 	precache_scorpion();

@@ -12,6 +12,8 @@
 void() SUB_regen;
 void() StartItem;
 void ring_touch(void);
+float(entity forwhom, float themod) spellmod_give;
+void(entity forent, float status_effect) remove_status;
 
 
 void artifact_touch()
@@ -48,6 +50,9 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_h_boost += 1; 
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 15);
+		}
 	}
 	else if(self.netname == STR_SUPERHEALTHBOOST) // 1 limit
 	{
@@ -57,6 +62,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_sh_boost += 1; 
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 60);
+		}
 	}
 	else if(self.netname == STR_MANABOOST)
 	{
@@ -64,6 +73,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_mana_boost += 1; 
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 50);
+		}
 	}
 	else if(self.netname == STR_TELEPORT)
 	{
@@ -71,6 +84,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_teleport += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 40);
+		}
 	}
 	else if(self.netname == STR_TOME)
 	{
@@ -78,6 +95,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_tome += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 55);
+		}
 	}
 	else if(self.netname == STR_SUMMON)
 	{
@@ -85,6 +106,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_summon += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 60);
+		}
 	}
 	else if(self.netname == STR_INVISIBILITY)
 	{
@@ -92,6 +117,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_invisibility += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 35);
+		}
 	}
 	else if(self.netname == STR_GLYPH)
 	{
@@ -101,6 +130,10 @@ void artifact_touch()
 				return;	
 			else	
 				other.cnt_glyph += 5;
+
+			if (other.predebt == 1) {
+				other.debt = (other.debt + 25);
+			}
 		}
 		else
 		{*/
@@ -108,7 +141,13 @@ void artifact_touch()
 				return;	
 			else	
 				other.cnt_glyph += 1;
+
+			if (other.predebt == 1) {
+				other.debt = (other.debt + 7);
+			}
+
 		//}		crusader has spiky ice glyphs instead of timebombs now
+
 	}
 	else if(self.netname == STR_HASTE)
 	{
@@ -116,6 +155,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_haste += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 25);
+		}
 	}
 	else if(self.netname == STR_BLAST)
 	{
@@ -123,6 +166,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_blast += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 10);
+		}
 	}
 	else if(self.netname == STR_POLYMORPH)
 	{
@@ -130,6 +177,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_polymorph += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 40);
+		}
 	}
 	else if(self.netname == STR_FLIGHT)
 	{
@@ -137,6 +188,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_flight += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 80);
+		}
 	}
 	else if(self.netname == STR_CUBEOFFORCE)
 	{
@@ -144,6 +199,10 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_cubeofforce += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 50);
+		}
 	}
 	else if(self.netname == STR_INVINCIBILITY)
 	{
@@ -151,6 +210,35 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_invincibility += 1;
+
+		if (other.predebt == 1) {
+			other.debt = (other.debt + 99);
+		}
+	}
+	else if(self.netname == STR_ACCELERATOR)
+	{
+		if (spellmod_give(other, SUPPORT_CASTSPEED))
+			return;
+	}
+	else if(self.netname == STR_PRISM)
+	{
+		if (spellmod_give(other, SUPPORT_MULTI))
+			return;
+	}
+	else if(self.netname == STR_AMPLIFIER)
+	{
+		if (spellmod_give(other, SUPPORT_DAMAGE))
+			return;
+	}
+	else if(self.netname == STR_MAGNIFIER)
+	{
+		if (spellmod_give(other, SUPPORT_RADIUS))
+			return;
+	}
+	else if(self.netname == STR_TRAP)
+	{
+		if (spellmod_give(other, SUPPORT_TRAP))
+			return;
 	}
 	/*
 	else if(self.classname == "art_sword_and_crown")
@@ -281,6 +369,16 @@ void spawn_artifact (float artifact,float respawnflag)
 		GenerateArtifactModel("models/a_shbost.mdl",STR_SUPERHEALTHBOOST,respawnflag);
 	else if (artifact == ARTIFACT_FLIGHT)
 		GenerateArtifactModel("models/ringft.mdl",STR_FLIGHT,respawnflag);
+	else if (artifact == ARTIFACT_SPELL_ACCELERATOR)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_ACCELERATOR, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_PRISM)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_PRISM, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_AMPLIFIER)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_AMPLIFIER, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_MAGNIFIER)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_MAGNIFIER, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_TRAP)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_TRAP, respawnflag);
 }
 
 
@@ -384,6 +482,9 @@ void use_healthboost()
 	{
   		self.health = self.max_health;
 	}
+
+	if (self.status_effects & STATUS_POISON)
+		remove_status(self, STATUS_POISON);
 }
 
 
@@ -490,8 +591,12 @@ void art_blastradius()
 
 void UseManaBoost()
 {
+	if ((self.bluemana == self.max_mana) && (self.greenmana == self.max_mana) && (self.elemana == self.max_mana))
+	return;
+	sound ( self, CHAN_BODY, "misc/whoosh.wav", 1.00000, ATTN_NORM);	
 	self.bluemana  = self.max_mana;
 	self.greenmana = self.max_mana;
+	self.elemana = self.max_mana;
 
 	self.cnt_mana_boost -= 1;
 }

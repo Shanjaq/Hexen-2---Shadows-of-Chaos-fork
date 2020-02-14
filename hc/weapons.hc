@@ -8,6 +8,9 @@ void(vector org, vector vel, float damage,entity victim) SpawnPuff;
 void() PlayerCrouch;
 void() UseInventoryItem;
 void() ImpulseCommands;
+void() frost_launch;
+void() spellmod_install;
+void() spellfire;
 
 //============================================================================
 
@@ -35,6 +38,49 @@ void(float damage,entity victim) spawn_touchpuff =
 	vel = wall_velocity () * 0.2;
 	SpawnPuff (self.origin + vel*0.01, vel, damage,victim);
 };
+
+void BecomeExplosion (float explodetype)
+{
+	if (explodetype)
+	{
+		if(explodetype==CE_FLOOR_EXPLOSION)
+			starteffect(CE_FLOOR_EXPLOSION , self.origin+'0 0 64');
+		else
+			starteffect(explodetype , self.origin);
+		if(explodetype==CE_FLOOR_EXPLOSION || explodetype==CE_FLOOR_EXPLOSION2)
+			fx_light(self.origin, EF_BRIGHTLIGHT);
+		else if (explodetype==CE_LG_EXPLOSION)	//exploding barrels
+			fx_light(self.origin, EF_LIGHT);
+		else	//CE_NEW_EXPLOSION || CE_SM_EXPLOSION
+			fx_light(self.origin, EF_DIMLIGHT);
+	}
+	else
+	{
+		if (self.flags2&FL_SMALL) {
+			starteffect(CE_SM_EXPLOSION , self.origin);
+			fx_light(self.origin, EF_DIMLIGHT);
+		}
+		else if(self.flags&FL_ONGROUND) {
+			starteffect(CE_FLOOR_EXPLOSION , self.origin+'0 0 64');
+			fx_light(self.origin, EF_BRIGHTLIGHT);
+		}
+		else {
+			starteffect(CE_LG_EXPLOSION , self.origin);
+			fx_light(self.origin, EF_LIGHT);
+		}
+	}
+
+	if(self.classname=="multigrenade")
+	{//Let sounds play here
+		self.effects=EF_NODRAW;
+		self.velocity='0 0 0';
+		self.movetype=MOVETYPE_NONE;
+		self.think=SUB_Remove;
+		thinktime self : 3;
+	}
+	else
+		remove(self);
+}
 
 void() T_MissileTouch =
 {
@@ -419,7 +465,7 @@ float W_CheckNoAmmo (float check_weapon)
 		{
 			if(self.artifact_active&ART_TOMEOFPOWER)
 			{
-				if(self.bluemana >= 20 && self.greenmana >= 20)
+				if(self.bluemana >= 30 && self.greenmana >= 30)
 					return TRUE;
 			}
 			else if(self.bluemana >= 1 && self.greenmana >= 1)
@@ -514,7 +560,7 @@ float W_CheckNoAmmo (float check_weapon)
 		{
 			if(self.artifact_active&ART_TOMEOFPOWER)
 			{
-				if(self.bluemana >= PFLAME_COST && self.greenmana >= PFLAME_COST)
+				if(self.bluemana >= 8 && self.greenmana >= 8)
 					return TRUE;
 			}
 			else if(self.bluemana >= 1 && self.greenmana >= 1)
@@ -791,6 +837,13 @@ float	it, am, fl;
 		if ((self.bluemana < 1) && (self.greenmana <1))
 			am = 1;
 	}
+	
+	if (self.sale == 1) {
+		self.choice = self.impulse;
+		//car = ftos(self.choice);
+		// sprint (self, "3\n");
+		return;
+	}
 
 	self.impulse = 0;
 
@@ -980,6 +1033,57 @@ if (self.welcomeshown <= 16)		// set endtime of welcome message here
 	}
 }*/
 	ImpulseCommands ();
+
+// Peanut
+	if (self.handy == 2) {
+		if ((self.Lspell == 25) || (self.Lspell == 2)) {
+			if ((self.Lspell == 25) && (self.magic_finished < time))
+				frost_launch();
+		}
+		else
+		{
+			if (time >= (self.LfingerC - ((self.spelltop * 0.36250) * ((self.Lsupport & SUPPORT_RADIUS) > 0)))) {
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+					{
+						spellmod_install();
+						self.LfingerC = time + self.spelltop;
+					}
+					else if (!(self.Lsupport & SUPPORT_RADIUS))
+					{
+						spellfire();
+						self.LfingerC = time + self.spelltop;
+					}
+				}
+			}
+		}
+	}
+	
+	if (self.handy == 3) {
+		if ((self.Rspell == 25) || (self.Rspell == 2)) {
+			if ((self.Rspell == 25) && (self.magic_finished < time))
+				frost_launch();
+		}
+		else
+		{
+			if (time >= (self.RfingerC - ((self.spelltop * 0.36250) * ((self.Rsupport & SUPPORT_RADIUS) > 0)))) {
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+					{
+						spellmod_install();
+						self.RfingerC = time + self.spelltop;
+					}
+					else if (!(self.Rsupport & SUPPORT_RADIUS))
+					{
+						spellfire();
+						self.RfingerC = time + self.spelltop;
+					}
+				}
+			}
+		}
+	}
 	
 	if (self.playerclass==CLASS_ASSASSIN && self.button1 && self.weapon != IT_WEAPON2 && self.whiptime < time)
 	{
@@ -989,14 +1093,18 @@ if (self.welcomeshown <= 16)		// set endtime of welcome message here
 	if (time < self.attack_finished)
 		return;
 
-// check for attack
-	if (self.button0)
-	{
-		W_Attack (FALSE);
-	}
-	else if (self.button1)
-	{
-		W_Attack (TRUE);
+	if (self.click == 1) {
+		stuffcmd(self,"impulse 61\n");
+	} else {
+		// check for attack
+		if (self.button0)
+		{
+			W_Attack (FALSE);
+		}
+		else if (self.button1)
+		{
+			W_Attack (TRUE);
+		}
 	}
 };
 
