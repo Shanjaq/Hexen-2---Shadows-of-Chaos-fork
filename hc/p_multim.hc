@@ -230,6 +230,7 @@ void ()spawn_refresh = {
 					sound ( self, CHAN_AUTO, "skullwiz/push.wav", 1.00000, ATTN_NORM);
 					newmis = spawn();
 					//newmis.flags2 (+) FL_SUMMONED;
+					newmis.flags2 (+) FL2_RESPAWN;
 					setorigin(newmis, pos);
 					newmis.spawned_extra = self.spawned_extra;
 					newmis.skin = result.skin;
