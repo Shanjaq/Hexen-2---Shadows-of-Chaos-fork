@@ -482,16 +482,18 @@ void() monster_snake =
 	self.movetype = MOVETYPE_NONE;
 	self.colormap = 3;
 
-	precache_model2 ("models/goop.mdl");
-	precache_model2 ("models/snake.mdl");
-	setmodel (self, "models/snake.mdl");
+	if (!self.flags2 & FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
+	{
+		precache_model2 ("models/goop.mdl");
+		precache_model2 ("models/snake.mdl");
+		setmodel (self, "models/snake.mdl");
 
-	precache_sound2 ("snake/attack.wav");
-	precache_sound2 ("snake/hiss.wav");
-	precache_sound2 ("snake/wake.wav");
-	precache_sound2 ("snake/life.wav");
-	precache_sound2 ("fangel/deflect.wav");
-
+		precache_sound2 ("snake/attack.wav");
+		precache_sound2 ("snake/hiss.wav");
+		precache_sound2 ("snake/wake.wav");
+		precache_sound2 ("snake/life.wav");
+		precache_sound2 ("fangel/deflect.wav");
+	}
 	setsize (self, '-80 -80 0', '80 80 200' );
 	if (!self.health)
 		self.health = 1200;

@@ -983,7 +983,7 @@ void monster_mummy_lord (void)
 		return;
 	}
 
-	if(!self.flags2&FL_SUMMONED)
+	if (!self.flags2 & FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
 	{
 		precache_model2("models/mummy.mdl");
 		precache_model2("models/larm.mdl");
