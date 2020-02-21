@@ -5,6 +5,7 @@
 void precache_spider ();
 void precache_scorpion ();
 void precache_mummy ();
+void precache_knight();
 
 // called by worldspawn
 void() W_Precache =
@@ -34,6 +35,7 @@ void() W_Precache =
 	//ws: precache monsters used by sickle monster summoning function
 	precache_scorpion();
 	precache_spider();
+	precache_knight();
 };
 
 
@@ -613,9 +615,13 @@ void Precache_wav (void)
 	precache_sound ("fx/clothbrk.wav");		// Cloth breaking (rug)
 	precache_sound ("fx/thngland.wav");		// landing thud
 	precache_sound ("misc/null.wav");		// null sound to stop other sounds from playing
-	
+//SoC
 	precache_sound ("ambience/water1.wav");
 	precache_sound ("fx/lava2.wav");
+	precache_sound ("fx/blood.wav");		//hexen
+	precache_sound ("fx/fleshdrop1.wav");	//heretic2
+	precache_sound ("fx/fleshdrop2.wav");	//heretic2
+	precache_sound ("fx/fleshdrop3.wav");	//heretic2
 
 //ITEMS and ARTIFACTS
 	precache_sound ("weapons/ammopkup.wav");// Backpack pick up
@@ -812,11 +818,12 @@ void Precache_wav (void)
 	precache_sound ("necro/bonenhit.wav");
 	precache_sound ("necro/attack1.wav");
 	precache_sound ("necro/bonenwal.wav");
-	
-	precache_sound ("necro/hum1.wav");
+	//SoC
+	precache_sound ("necro/attack1.wav");	//magic mis altfire
+	/*precache_sound ("necro/hum1.wav");
 	precache_sound ("necro/hum2.wav");
-	precache_sound ("necro/hum3.wav");
-	precache_sound ("necro/bonethit.wav");
+	precache_sound ("necro/hum3.wav");*/
+	precache_sound ("necro/bonethit.wav");	//tomed shard ball
 	
 	//Raven Staff
 	precache_sound ("raven/ravengo.wav");
@@ -1310,6 +1317,11 @@ void precache_mummy ()
 	precache_sound2 ("mummy/tap.wav");
 	precache_sound2 ("mummy/bite.wav");
 	precache_sound2 ("mummy/fire.wav");
+	
+	precache_sound2 ("mummy/sight2.wav");
+	precache_sound2 ("mummy/die2.wav");
+	precache_sound2 ("mummy/moan2.wav");
+	precache_sound2 ("mummy/pain2.wav");
 }
 
 void precache_spider ()
@@ -1369,4 +1381,6 @@ void precache_undying()
 	precache_sound ("undying/usight.wav");
 	precache_sound ("undying/udecap.wav");
 	precache_sound ("death_knight/kdeath2.wav");
+	precache_sound ("mummy/crawl.wav");
+	precache_sound ("undying/uhit.wav");	//taken from Strife (Rogue Software)
 }

@@ -308,7 +308,7 @@ void W_SetCurrentAmmo (void)
 	wp_deselect = 0;
 
 	self.button0=FALSE;
-	attck_cnt=0;
+	//attck_cnt=0;
 
 	if (self.oldweapon==self.weapon)		// Until we get multi skinned weapons
 		return;
@@ -378,6 +378,32 @@ void W_SetCurrentAmmo (void)
 		else if (self.playerclass == CLASS_NECROMANCER)
 			ravenstaff_select();
 	}
+	else if (self.weapon == IT_WEAPON5)
+	{		
+		self.weaponmodel="";
+		self.weaponframe = 0;
+		if (self.playerclass == CLASS_PALADIN)
+			gauntlet_select();
+		else if (self.playerclass == CLASS_NECROMANCER)
+			sickle_select();
+		else if (self.playerclass == CLASS_CRUSADER)
+			warhammer_select();
+		else if (self.playerclass == CLASS_ASSASSIN)
+			punchdagger_select();
+	}
+	else if (self.weapon == IT_WEAPON6)
+	{		
+		self.weaponmodel="";
+		self.weaponframe = 0;
+		if (self.playerclass == CLASS_PALADIN)
+			gauntlet_select();
+		else if (self.playerclass == CLASS_NECROMANCER)
+			sickle_select();
+		else if (self.playerclass == CLASS_CRUSADER)
+			warhammer_select();
+		else if (self.playerclass == CLASS_ASSASSIN)
+			punchdagger_select();
+	}
 
 //All players will have to do this eventually, to reset
 //the stand, pain, run & fly functions for the different weapons
@@ -418,7 +444,27 @@ float W_CheckNoAmmo (float check_weapon)
 	
 	if(self.playerclass==CLASS_ASSASSIN)
 	{
-		if (check_weapon==IT_WEAPON4)
+		if (check_weapon==IT_WEAPON6)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.greenmana >= 12)
+					return TRUE;
+			}
+			else if(self.greenmana >= 3)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON5)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.bluemana >= 5)
+					return TRUE;
+			}
+			else if(self.bluemana >= 2)
+				return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON4)
 		{
 			if(self.artifact_active&ART_TOMEOFPOWER)
 			{
@@ -451,7 +497,27 @@ float W_CheckNoAmmo (float check_weapon)
 	}
 	else if(self.playerclass==CLASS_CRUSADER)
 	{
-		if (check_weapon==IT_WEAPON4)
+		if (check_weapon==IT_WEAPON6)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.greenmana >= 12)
+					return TRUE;
+			}
+			else if(self.greenmana >= 8)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON5)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.bluemana >= 10)
+					return TRUE;
+			}
+			else if(self.bluemana >= 1)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON4)
 		{
 			if(self.bluemana >= 2 && self.greenmana >= 2)
 				return TRUE;
@@ -480,7 +546,27 @@ float W_CheckNoAmmo (float check_weapon)
 	}
 	else if(self.playerclass==CLASS_NECROMANCER)
 	{
-		if (check_weapon==IT_WEAPON4)
+		if (check_weapon==IT_WEAPON6)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.greenmana >= BONE_NORMAL_COST + BONE_TOMED_COST)
+					return TRUE;
+			}
+			else if(self.greenmana >= BONE_NORMAL_COST)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON5)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.bluemana >= MMIS_TOME_COST)
+					return TRUE;
+			}
+			else if(self.bluemana >= MMIS_COST)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON4)
 		{
 			if(self.artifact_active&ART_TOMEOFPOWER)
 			{
@@ -513,7 +599,27 @@ float W_CheckNoAmmo (float check_weapon)
 	}
 	else if(self.playerclass==CLASS_PALADIN)
 	{
-		if (check_weapon==IT_WEAPON4)
+		if (check_weapon==IT_WEAPON6)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.greenmana >= 12)
+					return TRUE;
+			}
+			else if(self.greenmana >= 8)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON5)
+		{
+			if(self.artifact_active&ART_TOMEOFPOWER)
+			{
+				if(self.bluemana >= 10)
+					return TRUE;
+			}
+			else if(self.bluemana >= 1)
+					return TRUE;
+		}
+		else if (check_weapon==IT_WEAPON4)
 		{
 			if(self.artifact_active&ART_TOMEOFPOWER)
 			{
@@ -551,8 +657,12 @@ void() W_BestWeapon =
 		self.weapon = IT_WEAPON4;
 	else if (W_CheckNoAmmo (IT_WEAPON3) && (self.items & IT_WEAPON3))
 		self.weapon = IT_WEAPON3;
+	else if (W_CheckNoAmmo (IT_WEAPON6) && (self.items & IT_WEAPON6))
+		self.weapon = IT_WEAPON6;
 	else if (W_CheckNoAmmo (IT_WEAPON2) && (self.items & IT_WEAPON2))
 		self.weapon = IT_WEAPON2;
+	else if (W_CheckNoAmmo (IT_WEAPON5) && (self.items & IT_WEAPON5))
+		self.weapon = IT_WEAPON5;
 	else self.weapon = IT_WEAPON1;
 
 /*float	test_weapon;
@@ -677,6 +787,32 @@ void W_Attack (float rightclick)
 		else if(self.playerclass==CLASS_NECROMANCER)
 			ravenstaff_fire();
 	}
+	else if (self.weapon == IT_WEAPON5)
+	{
+		if (self.playerclass==CLASS_PALADIN)
+			pal_gauntlet_fire(rightclick);
+		else if (self.playerclass==CLASS_NECROMANCER)
+			sickle_decide_attack(rightclick);
+		else if (self.playerclass==CLASS_ASSASSIN)
+		{
+			Ass_Pdgr_Fire();			
+		}
+		else if (self.playerclass==CLASS_CRUSADER)
+			Cru_Wham_Fire(rightclick);
+	}
+	else if (self.weapon == IT_WEAPON6)
+	{
+		if (self.playerclass==CLASS_PALADIN)
+			pal_gauntlet_fire(rightclick);
+		else if (self.playerclass==CLASS_NECROMANCER)
+			sickle_decide_attack(rightclick);
+		else if (self.playerclass==CLASS_ASSASSIN)
+		{
+			Ass_Pdgr_Fire();			
+		}
+		else if (self.playerclass==CLASS_CRUSADER)
+			Cru_Wham_Fire(rightclick);
+	}
 }
 
 
@@ -747,6 +883,32 @@ void W_DeselectWeapon (void)
 		else
 			W_SetCurrentAmmo();
 	}
+	else if (self.oldweapon == IT_WEAPON5)
+	{
+		if (self.playerclass==CLASS_PALADIN)
+			gauntlet_deselect();
+		else if (self.playerclass==CLASS_CRUSADER)
+			warhammer_deselect();
+		else if (self.playerclass==CLASS_ASSASSIN)
+			punchdagger_deselect();
+		else if (self.playerclass==CLASS_NECROMANCER)
+			sickle_deselect();
+		else
+			W_SetCurrentAmmo();
+	}
+	else if (self.oldweapon == IT_WEAPON6)
+	{
+		if (self.playerclass==CLASS_PALADIN)
+			gauntlet_deselect();
+		else if (self.playerclass==CLASS_CRUSADER)
+			warhammer_deselect();
+		else if (self.playerclass==CLASS_ASSASSIN)
+			punchdagger_deselect();
+		else if (self.playerclass==CLASS_NECROMANCER)
+			sickle_deselect();
+		else
+			W_SetCurrentAmmo();
+	}
 	else
 		W_SetCurrentAmmo();
 }
@@ -794,6 +956,14 @@ float	it, am, fl;
 		if ((self.bluemana < 1) && (self.greenmana <1))
 			am = 1;
 	}
+	else if (self.impulse == 5)
+	{
+		fl = IT_WEAPON5;
+	}
+	else if (self.impulse == 6)
+	{
+		fl = IT_WEAPON6;
+	}
 	
 	if (self.sale == 1) {
 		self.choice = self.impulse;
@@ -836,7 +1006,7 @@ void() CheatCommand =
 	if(deathmatch)
 		return;
 
-	self.items(+)IT_WEAPON1|IT_WEAPON2|IT_WEAPON3|IT_WEAPON4|IT_WEAPON4_1|IT_WEAPON4_2;
+	self.items(+)IT_WEAPON1|IT_WEAPON2|IT_WEAPON3|IT_WEAPON4|IT_WEAPON5|IT_WEAPON6|IT_WEAPON4_1|IT_WEAPON4_2;
 
 	self.bluemana = self.max_mana;
 	self.greenmana = self.max_mana;
@@ -880,6 +1050,14 @@ void() CycleWeaponCommand =
 			fl = IT_WEAPON4;
 		}
 		else if (fl == IT_WEAPON4)
+		{
+			fl = IT_WEAPON5;
+		}
+		else if (fl == IT_WEAPON5)
+		{
+			fl = IT_WEAPON6;
+		}
+		else if (fl == IT_WEAPON6)
 		{
 			fl = IT_WEAPON1;
 		}
@@ -929,6 +1107,14 @@ void() CycleWeaponReverseCommand =
 		else if (fl == IT_WEAPON4)
 		{
 			fl = IT_WEAPON3;
+		}
+		else if (fl == IT_WEAPON5)
+		{
+			fl = IT_WEAPON4;
+		}
+		else if (fl == IT_WEAPON6)
+		{
+			fl = IT_WEAPON5;
 		}
 		else /* ouch !!?? */
 		{
@@ -1100,6 +1286,16 @@ void ClassChangeWeapon(void)
 			self.th_weapon=purifier_select;
 			self.weaponmodel = "models/purifier.mdl";
 		}
+		else if (self.weapon == IT_WEAPON5)
+		{
+			self.th_weapon=gauntlet_select;
+			self.weaponmodel = GAUNT_TEXMOD;
+		}
+		else if (self.weapon == IT_WEAPON6)
+		{
+			self.th_weapon=gauntlet_select;
+			self.weaponmodel = GAUNT_TEXMOD;
+		}
 	}
 	else if (self.playerclass==CLASS_CRUSADER)
 	{
@@ -1122,6 +1318,16 @@ void ClassChangeWeapon(void)
 		{
 			self.th_weapon=sunstaff_select;
 			self.weaponmodel = "models/sunstaff.mdl";
+		}
+		else if (self.weapon == IT_WEAPON5)
+		{
+			self.th_weapon=warhammer_select;
+			self.weaponmodel = HAMMER_TEXMOD;
+		}
+		else if (self.weapon == IT_WEAPON6)
+		{
+			self.th_weapon=warhammer_select;
+			self.weaponmodel = HAMMER_TEXMOD;
 		}
 	}
 	else if (self.playerclass==CLASS_NECROMANCER)
@@ -1146,6 +1352,16 @@ void ClassChangeWeapon(void)
 			self.th_weapon=ravenstaff_select;
 			self.weaponmodel = "models/ravenstf.mdl";
 		}
+		else if (self.weapon == IT_WEAPON5)
+		{
+			self.th_weapon=sickle_select;
+			self.weaponmodel = SICKLE_TEXMOD;
+		}
+		else if (self.weapon == IT_WEAPON6)
+		{
+			self.th_weapon=sickle_select;
+			self.weaponmodel = SICKLE_TEXMOD;
+		}
 	}
 	else if (self.playerclass==CLASS_ASSASSIN)
 	{
@@ -1169,6 +1385,16 @@ void ClassChangeWeapon(void)
 			self.th_weapon=setstaff_select;
 			self.weaponmodel = "models/scarabst.mdl";
 		}
+		else if (self.weapon == IT_WEAPON5)
+		{
+			self.th_weapon=punchdagger_select;
+			self.weaponmodel = PDGR_TEXMOD;
+		}
+		else if (self.weapon == IT_WEAPON6)
+		{
+			self.th_weapon=punchdagger_select;
+			self.weaponmodel = PDGR_TEXMOD;
+		}
 	}
 //FIXME: take off all timed effects, lighting tinting, drawflags,
 //	power-ups, etc.  Reset max health, abilities, etc.
@@ -1187,7 +1413,7 @@ void W_SetCurrentWeapon (void)
 		return;
 
 	self.button0=FALSE;
-	attck_cnt=0;
+	//attck_cnt=0;
 
 	if (self.oldweapon==self.weapon)		// Until we get multi skinned weapons
 		return;

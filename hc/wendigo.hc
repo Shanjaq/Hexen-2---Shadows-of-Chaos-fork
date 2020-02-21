@@ -382,14 +382,12 @@ void() monster_wendigo =
 		precache_model ("models/wendigo.mdl");
 		precache_model ("models/IceDeath.mdl");
 		precache_model ("models/proj_wend.mdl");
-		
+
 		precache_sound ("wendigo/attack.wav");
 		precache_sound ("wendigo/icehit.wav");
-		//precache_sound ("wendigo/gib2.wav");
-		//precache_sound ("wendigo/sword1.wav");
-		//precache_sound ("wendigo/sword2.wav");
 		precache_sound ("wendigo/idle.wav");
 	}
+
 	self.solid = SOLID_SLIDEBOX;
 	self.movetype = MOVETYPE_STEP;
 
