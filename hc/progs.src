@@ -85,7 +85,6 @@ tripmine.hc		// UQ tripmines
 // Peanut ALL NEW CODE
 p_damage.hc
 p_gametype.hc
-p_items.hc
 p_artifact.hc
 p_fx.hc
 p_clouds.hc
