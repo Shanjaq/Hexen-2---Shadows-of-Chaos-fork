@@ -858,7 +858,7 @@ void imp_swoop_end () [++ $swpend1 .. $swpend15]
 }
 
 void imp_swoop_charge () [++ $swpcyc1 .. $swpcyc4]
-{	eprint(self.enemy);
+{
 vector dir,destiny,org;
 	self.last_attack=time;
 	check_pos_enemy();
@@ -1490,7 +1490,7 @@ void init_imp (float which_skin)
 		return;
 	}
 
-	if (!self.flags2 & FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
+	if(!self.flags2&FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
 	{
 		precache_model ("models/imp.mdl");
 		precache_model ("models/h_imp.mdl");//empty for now

@@ -59,91 +59,53 @@ void monster_fallen_angel (void);
 	self.origin = spot1;
  
 	if (self.classname == "monster_imp_ice")
-	{
 		self.think = monster_imp_ice;
-	}
 	else if (self.classname == "monster_imp_fire")
-	{
 		self.think = monster_imp_fire;
-	}
 	else if (self.classname == "monster_archer")
-	{
 		self.think = monster_archer;
-	}
 	else if (self.classname == "monster_archer_lord")
 	{
 		self.classname = "monster_archer_lord"; //self.classname = "monster_archer";
 		self.think = monster_archer;
 	}
 	else if (self.classname == "monster_skull_wizard")
-	{
 		self.think = monster_skull_wizard;
-	}
 	else if (self.classname == "monster_scorpion_black")
-	{
 		self.think = monster_scorpion_black;
-	}
 	else if (self.classname == "monster_scorpion_yellow")
-	{
 		self.think = monster_scorpion_yellow;
-	}
 	else if (self.classname == "monster_spider_yellow_large")
-	{
 		self.think = monster_spider_yellow_large;
-	}
 	else if (self.classname == "monster_spider_yellow_small")
-	{
 		self.think = monster_spider_yellow_small;
-	}
 	else if (self.classname == "monster_spider_red_large")
-	{
 		self.think = monster_spider_red_large;
-	}
 	else if (self.classname == "monster_spider_red_small")
-	{
 		self.think = monster_spider_red_small;
-	}
 	else if (self.classname == "monster_golem_stone")
-	{
 		self.think = monster_golem_stone;
-	}
 	else if (self.classname == "monster_golem_iron")
-	{
 		self.think = monster_golem_iron;
-	}
 	else if (self.classname == "monster_golem_bronze")
-	{
 		self.think = monster_golem_bronze;
-	}
 	else if (self.classname == "monster_mummy")
-	{
 		self.think = monster_mummy;
-	}
 	else if (self.classname == "monster_mummy_lord")
 	{
 		self.classname = "monster_mummy";
 		self.think = monster_mummy;
 	}
 	else if (self.classname == "monster_werejaguar")
-	{
 		self.think = monster_werejaguar;
-	}
 	else if (self.classname == "monster_mezzoman")
-	{
 		self.think = monster_mezzoman;
-	}
 	else if (self.classname == "monster_werepanther")
-	{
 		self.think = monster_werepanther;
-	}
 	else if (self.classname == "monster_medusa")
-	{
 		self.think = monster_medusa;
-	}
 	else if (self.classname == "monster_fallen_angel")
-	{
 		self.think = monster_fallen_angel;
-	}
 	else if (self.classname == "monster_fallen_angel_lord")
 	{
 		self.classname = "monster_fallen_angel";
@@ -171,7 +133,7 @@ void MarkForRespawn (void)
 	entity newmis;
 	float timelimit;
 	
-	if (self.classname != "player" && !self.preventrespawn && respawning) //do not respawn players or summoned monsters
+	if (CheckCfgParm(PARM_RESPAWN) && self.classname != "player" && !self.preventrespawn) //do not respawn players or summoned monsters
 	{
 		dprint ("Classname: ");
 		dprint (self.classname);
@@ -207,13 +169,7 @@ void corpseblink (void)
 	self.scale -= 0.10;
 
 	if (self.scale < 0.10)
-	{
 		MarkForRespawn();
-	}
-	else
-	{
-		remove(self);
-	}
 }
 
 void init_corpseblink (void)
@@ -249,7 +205,7 @@ void () CorpseThink =
 
 	if (self.watertype==CONTENT_LAVA)	// Corpse fell in lava
 		T_Damage(self,self,self,self.health);
-	else if (!corpsefading && self.lifetime < time)			// Time is up, begone with you
+	else if (CheckCfgParm(PARM_FADE) && self.lifetime < time)			// Time is up, begone with you
 		init_corpseblink();
 };
 
@@ -288,7 +244,7 @@ vector newmaxs;
 		setsize (self, self.mins,newmaxs);
 	else
 		//setsize (self, '-13 -28 -14', '10 3 -9'); //resize the dk berserker because i fucked up his origin and im too lazy to fix it. Also wtf are you doing using HexenC? It's 2017 nerd, go use UE4
-		setsize (self, '-26 -28 -14', '88 28 -9'); //it was still messed up. 2017 eh? -ws
+		setsize (self, '-26 -28 -14', '88 28 -9'); //ws: it was still messed up. 2017 eh?
 	if(self.flags&FL_ONGROUND)
 		self.velocity='0 0 0';
     self.flags(-)FL_MONSTER;
@@ -311,7 +267,7 @@ vector newmaxs;
     }
     else 
 	{
-		self.lifetime = time + random(60,70); // disappear after 70 seconds - CORPSE TIMER
+		self.lifetime = time + random(20,30);
 		self.think=CorpseThink;
 		thinktime self : 0;
 		//return;

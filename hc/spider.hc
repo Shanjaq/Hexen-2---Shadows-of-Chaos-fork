@@ -83,7 +83,7 @@ void SpiderJumpOffWall();
 
 float SpiderHealth[4] =
 {
-	175,		// SPIDER_RED_LARGE
+	125,		// SPIDER_RED_LARGE
 	50,			// SPIDER_RED_SMALL
 	75,			// SPIDER_YELLOW_LARGE
 	30			// SPIDER_YELLOW_SMALL
@@ -91,7 +91,7 @@ float SpiderHealth[4] =
 
 float SpiderExp[4] =
 {
-	225,	// SPIDER_RED_LARGE
+	150,	// SPIDER_RED_LARGE
 	50,		// SPIDER_RED_SMALL
 	100,	// SPIDER_YELLOW_LARGE
 	25		// SPIDER_YELLOW_SMALL
@@ -288,7 +288,7 @@ void SpiderInit(float type)
 		return;
 	}
 
-	if (!self.flags2 & FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
+	if(!self.flags2&FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
 		precache_spider();
 
 	setmodel(self, "models/spider.mdl");

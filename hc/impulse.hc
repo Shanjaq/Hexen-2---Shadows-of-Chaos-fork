@@ -22,6 +22,10 @@ void restore_weapon ()
 			self.weaponmodel = "models/axe.mdl";
 		else if (self.weapon == IT_WEAPON4)
 			self.weaponmodel = "models/purifier.mdl";
+		else if (self.weapon == IT_WEAPON5)
+			self.weaponmodel = "models/gauntlet.mdl";
+		else if (self.weapon == IT_WEAPON6)
+			self.weaponmodel = "models/gauntlet.mdl";
 	}
 	else if (self.playerclass==CLASS_CRUSADER)
 	{
@@ -33,6 +37,10 @@ void restore_weapon ()
 			self.weaponmodel = "models/meteor.mdl";
 		else if (self.weapon == IT_WEAPON4)
 			self.weaponmodel = "models/sunstaff.mdl";
+		else if (self.weapon == IT_WEAPON5)
+			self.weaponmodel = "models/warhamer.mdl";
+		else if (self.weapon == IT_WEAPON6)
+			self.weaponmodel = "models/warhamer.mdl";
 	}
 	else if (self.playerclass==CLASS_NECROMANCER)
 	{
@@ -44,6 +52,10 @@ void restore_weapon ()
 			self.weaponmodel = "models/sickle.mdl";
 		else if (self.weapon == IT_WEAPON4)
 			self.weaponmodel = "models/ravenstf.mdl";
+		else if (self.weapon == IT_WEAPON5)
+			self.weaponmodel = "models/sickle.mdl";
+		else if (self.weapon == IT_WEAPON6)
+			self.weaponmodel = "models/sickle.mdl";
 	}
 	else if (self.playerclass==CLASS_ASSASSIN)
 	{
@@ -55,6 +67,10 @@ void restore_weapon ()
 			self.weaponmodel = "models/v_assgr.mdl";
 		else if (self.weapon == IT_WEAPON4)
 			self.weaponmodel = "models/scarabst.mdl";
+		else if (self.weapon == IT_WEAPON5)
+			self.weaponmodel = "models/punchdgr.mdl";
+		else if (self.weapon == IT_WEAPON6)
+			self.weaponmodel = "models/punchdgr.mdl";
 	}
 }
 
@@ -459,42 +475,24 @@ void() ImpulseCommands =
 		DropInventoryItem();
 	else if (self.impulse == 45)
 	{
-		if (respawning)
-		{
-			respawning=FALSE;
-			sprint (self, "Monster respawning disabled\n");
-		}
-		else
-		{
-			respawning=TRUE;
+		if (SetCfgParm(PARM_RESPAWN))
 			sprint (self, "Monster respawning enabled\n");
-		}
+		else 
+			sprint (self, "Monster respawning disabled\n");
 	}
 	else if (self.impulse == 46)
 	{
-		if (corpsefading)
-		{
-			corpsefading=FALSE;
-			sprint (self, "Corpse fading disabled\n");
-		}
-		else
-		{
-			corpsefading=TRUE;
+		if (SetCfgParm(PARM_FADE))
 			sprint (self, "Corpse fading enabled\n");
-		}
+		else 
+			sprint (self, "Corpse fading disabled\n");
 	}
 	else if (self.impulse == 47)
 	{
-		if (monsterbuffing)
-		{
-			monsterbuffing=FALSE;
-			sprint (self, "Random monster variations disabled\n");
-		}
-		else
-		{
-			monsterbuffing=TRUE;
+		if (SetCfgParm(PARM_BUFF))
 			sprint (self, "Random monster variations enabled\n");
-		}
+		else
+			sprint (self, "Random monster variations disabled\n");
 	}
 /*	else if (self.impulse == 99)
 	{	// RJ's test impulse
@@ -802,7 +800,7 @@ void() ImpulseCommands =
 		self.impulse=0;
 		return;
 	}
-	else if (self.impulse >= 1 && self.impulse <= 4)
+	else if (self.impulse >= 1 && self.impulse <= 6)
 		W_ChangeWeapon ();
 	else if ((self.impulse == 10) && (wp_deselect == 0))
 		CycleWeaponCommand ();
