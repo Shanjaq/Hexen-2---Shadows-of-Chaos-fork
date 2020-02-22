@@ -390,11 +390,8 @@ void use_super_healthboost()
 	self.cnt_sh_boost -= 1;
 	self.artifact_flags(+)AFL_SUPERHEALTH;   // Show the health is in use
 
-	if(self.flags2&FL2_POISONED)
-	{
-		self.flags2(-)FL2_POISONED;
-		centerprint(self,"The poison has been cleansed from your blood...\n");
-	}
+	if (self.status_effects & STATUS_POISON)
+		remove_status(self, STATUS_POISON);
 }
 
 
