@@ -1104,7 +1104,7 @@ float poof_speed;
 	if (!other.health&&other.size!='0 0 0')
 	{//Exclude projectiles!
 		other.origin = t.origin;
-		if(!t.spawnflags&1&&self.classname != "teleportcoin")	//In case you don't want to push them in a certain dir
+		if((!t.spawnflags&1&&self.classname != "teleportcoin") && !(self.spawnflags & SILENT))	//In case you don't want to push them in a certain dir
 			other.velocity = (v_forward * other.velocity_x) + (v_forward * other.velocity_y);
 		return;
 	}
@@ -1133,7 +1133,8 @@ float poof_speed;
 		*/
 		else
 			poof_speed = 300;
-		other.velocity = v_forward * poof_speed;
+		if(mapname!="peanutshop") //prevent infinite loop between landings
+			other.velocity = v_forward * poof_speed;
 	}
 
 	other.flags(-)FL_ONGROUND;

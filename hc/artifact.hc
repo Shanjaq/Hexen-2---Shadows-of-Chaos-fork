@@ -50,9 +50,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_h_boost += 1; 
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 15);
-		}
 	}
 	else if(self.netname == STR_SUPERHEALTHBOOST) // 1 limit
 	{
@@ -62,10 +59,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_sh_boost += 1; 
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 60);
-		}
 	}
 	else if(self.netname == STR_MANABOOST)
 	{
@@ -73,10 +66,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_mana_boost += 1; 
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 50);
-		}
 	}
 	else if(self.netname == STR_TELEPORT)
 	{
@@ -84,10 +73,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_teleport += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 40);
-		}
 	}
 	else if(self.netname == STR_TOME)
 	{
@@ -95,10 +80,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_tome += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 55);
-		}
 	}
 	else if(self.netname == STR_SUMMON)
 	{
@@ -106,10 +87,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_summon += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 60);
-		}
 	}
 	else if(self.netname == STR_INVISIBILITY)
 	{
@@ -117,10 +94,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_invisibility += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 35);
-		}
 	}
 	else if(self.netname == STR_GLYPH)
 	{
@@ -130,10 +103,6 @@ void artifact_touch()
 				return;	
 			else	
 				other.cnt_glyph += 5;
-
-			if (other.predebt == 1) {
-				other.debt = (other.debt + 25);
-			}
 		}
 		else
 		{*/
@@ -142,12 +111,7 @@ void artifact_touch()
 			else	
 				other.cnt_glyph += 1;
 
-			if (other.predebt == 1) {
-				other.debt = (other.debt + 7);
-			}
-
 		//}		crusader has spiky ice glyphs instead of timebombs now
-
 	}
 	else if(self.netname == STR_HASTE)
 	{
@@ -155,10 +119,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_haste += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 25);
-		}
 	}
 	else if(self.netname == STR_BLAST)
 	{
@@ -166,10 +126,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_blast += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 10);
-		}
 	}
 	else if(self.netname == STR_POLYMORPH)
 	{
@@ -177,10 +133,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_polymorph += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 40);
-		}
 	}
 	else if(self.netname == STR_FLIGHT)
 	{
@@ -188,10 +140,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_flight += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 80);
-		}
 	}
 	else if(self.netname == STR_CUBEOFFORCE)
 	{
@@ -199,10 +147,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_cubeofforce += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 50);
-		}
 	}
 	else if(self.netname == STR_INVINCIBILITY)
 	{
@@ -210,10 +154,6 @@ void artifact_touch()
 			return;	
 		else
 			other.cnt_invincibility += 1;
-
-		if (other.predebt == 1) {
-			other.debt = (other.debt + 99);
-		}
 	}
 	else if(self.netname == STR_ACCELERATOR)
 	{
@@ -248,6 +188,9 @@ void artifact_touch()
 		bprint(" has captured the Crown!\n");
 	}
 	*/
+	if (other.predebt == 1) {
+		other.debt += item_value[self.inventory];
+	}
 
 	amount = random();
 	if (amount < 0.5)
@@ -379,6 +322,8 @@ void spawn_artifact (float artifact,float respawnflag)
 		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_MAGNIFIER, respawnflag);
 	else if (artifact == ARTIFACT_SPELL_TRAP)
 		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_TRAP, respawnflag);
+	
+	self.inventory = artifact;
 }
 
 
@@ -444,6 +389,12 @@ void use_super_healthboost()
 
 	self.cnt_sh_boost -= 1;
 	self.artifact_flags(+)AFL_SUPERHEALTH;   // Show the health is in use
+
+	if(self.flags2&FL2_POISONED)
+	{
+		self.flags2(-)FL2_POISONED;
+		centerprint(self,"The poison has been cleansed from your blood...\n");
+	}
 }
 
 
