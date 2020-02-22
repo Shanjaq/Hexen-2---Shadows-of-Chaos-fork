@@ -592,9 +592,9 @@ float weapmod, startframe,endframe,framestate;
 	if(self.act_state<ACT_JUMP||(self.playerclass==CLASS_NECROMANCER&&self.act_state<=ACT_JUMP))
 	{
 		if(self.weapon==IT_WEAPON6)
-			weapmod=5;
+			weapmod=0;
 		if(self.weapon==IT_WEAPON5)
-			weapmod=4;
+			weapmod=0;
 		if(self.weapon==IT_WEAPON4)
 			weapmod=3;
 		if(self.weapon==IT_WEAPON3)

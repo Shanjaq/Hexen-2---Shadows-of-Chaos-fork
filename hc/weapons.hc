@@ -1236,18 +1236,14 @@ if (self.welcomeshown <= 16)		// set endtime of welcome message here
 	if (time < self.attack_finished)
 		return;
 
-	if (self.click == 1) {
-		stuffcmd(self,"impulse 61\n");
-	} else {
-		// check for attack
-		if (self.button0)
-		{
-			W_Attack (FALSE);
-		}
-		else if (self.button1)
-		{
-			W_Attack (TRUE);
-		}
+	// check for attack
+	if (self.button0)
+	{
+		W_Attack (FALSE);
+	}
+	else if (self.button1)
+	{
+		W_Attack (TRUE);
 	}
 };
 
