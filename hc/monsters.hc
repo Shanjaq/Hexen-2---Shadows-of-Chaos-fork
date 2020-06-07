@@ -645,3 +645,15 @@ entity new;		//create new entity to avoid inheriting anything weird from corpse
 	thinktime corpse : 0;*/
 }
 
+void CheckMonsterBuff ()
+{
+	/*ws: monsters are spawned before player, so they cant check client's config flags immediately (as they arent initialized).
+	instead, use ai_run, ai_walk, & ai_stand to check once player is ready (indicated by global var client_ready, set in client.hc). */
+	if (!self.state && client_ready) {
+		self.state = TRUE;	//dont check again
+		if (CheckCfgParm(PARM_BUFF) && self.buff)
+			ApplyMonsterBuff(self, self.buff);
+	}
+	
+	return;
+}
