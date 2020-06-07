@@ -29,6 +29,7 @@ void() W_Precache =
 	precache_model ("models/faspell.mdl");
 	precache_model ("models/star.mdl");
 	precache_model ("models/proj_lt.mdl");
+	Precache_Magic();
 	
 	//Summoning monsters
 	precache_spider();
