@@ -174,12 +174,6 @@ void(entity targ, entity attacker, entity inflictor) Killed =
 	oself = self;
 	self = targ;
 
-	if (targ.experience_value >= 25)
-	{
-		if (targ.flags & FL_MONSTER && targ.flags2 & FL_ALIVE)
-		ThrowMoney(targ);
-	}
-	
 	if(!self.flags2&FL_ALIVE)
 		if (self.movetype == MOVETYPE_PUSH || self.movetype == MOVETYPE_NONE)
 		{	// doors, triggers, etc
@@ -236,20 +230,23 @@ void(entity targ, entity attacker, entity inflictor) Killed =
 				self.decap=2;
 			}
 
-	if(self.skin==GLOBAL_SKIN_STONE||self.frozen>0)
+	if(self.skin==GLOBAL_SKIN_STONE||self.skin==GLOBAL_SKIN_ASH||self.frozen>0)
 	{	//Frozen or stoned
 		if(self.classname!="player")
-			self.th_die=shatter;			
+			self.th_die=shatter;
 		thinktime self : 0;
 		self.attack_finished=time;
 		self.pausetime=time;
 		self.teleport_time=time;
-		//if(self.frozen>0)
-			//self.deathtype="ice shatter";
 		if(self.frozen>0)
 			self.deathtype="ice shatter";
 		else if(self.skin==GLOBAL_SKIN_STONE)
 			self.deathtype="stone crumble";
+		else if(self.skin==GLOBAL_SKIN_ASH)
+		{	//if we havent already initialized as ash statue, do so now
+			if (!self.artifact_active&ARTFLAG_ASH)
+				self.th_die=AshStatueInit;
+		}
 	}
 
 	if (self.classname == "player")
@@ -303,7 +300,7 @@ void(entity targ, entity attacker, entity inflictor) Killed =
 		}
 		//else if(self.classname=="player"&&attacker.classname=="player"&&(coop||teamplay&&attacker.team==self.team))
 			//drop_level(attacker,1);	//Killed friend in coop, lose a level
-
+		//commented out by Bloodshot
 		else if(attacker.flags&FL_CLIENT&&attacker!=self.controller&&(self.monsterclass<CLASS_BOSS||self.classname=="obj_chaos_orb"))//Bosses award Exp themselves, to all players in coop
 			AwardExperience(attacker,self,self.experience_value+exp_bonus);
 	}
@@ -333,7 +330,7 @@ void(entity targ, entity attacker, entity inflictor) Killed =
 	if(oself!=targ)
 	{
 		if(self.classname=="player")
-			PlayerDie();	
+			PlayerDie();
 		else if (self.th_die)
 			self.th_die ();
 
@@ -612,13 +609,9 @@ entity holdent;
 		return;
 	
 	if (attacker.bufftype & BUFFTYPE_SPECTRE)
-	{
 		damage *= 1.5;
-	}
 	else if (attacker.bufftype & BUFFTYPE_LEADER)
-	{
 		damage *= 1.25;
-	}
 
 	if(targ.classname=="monster_mezzoman")
 	{
@@ -767,6 +760,9 @@ entity holdent;
 		Killed (targ, attacker,inflictor);
 		return;
 	}
+	
+	if (attacker.flags&FL_CLIENT && targ.flags&FL_MONSTER && targ.controller != attacker && targ.health>0)	//ws: when player damages monster, make them his enemy (helps summoned monster AI)
+		attacker.enemy = targ;
 
 // react to the damage
 	oldself = self;
@@ -787,7 +783,7 @@ entity holdent;
 	{	// Monster's shouldn't attack each other (kin don't shoot kin)
 		if (self != attacker && attacker != self.enemy &&(self.enemy.classname!="player"||attacker.classname=="player"||attacker.controller.classname=="player"))
 		{
-			if (self.classname != attacker.classname||random(100)==1) //5% chance they'll turn on selves
+			if (self.classname != attacker.classname||random(100)<=5) //5% chance they'll turn on selves
 			{
 				if((self.model=="models/spider.mdl"||self.model=="models/scorpion.mdl")&&attacker.model==self.model)
 				{
@@ -804,7 +800,7 @@ entity holdent;
 	{
 		if(self.classname=="player"&&self.model!="models/sheep.mdl")
 			player_pain();
-		else 
+		else
 			self.th_pain (attacker, total_damage);
 	// nightmare mode monsters don't go into pain frames often
 		if (skill == 3)
@@ -831,7 +827,7 @@ vector	inflictor_org, org;
 //			other objects with a radius damage death (namely: exploding barrels)
 
 	inflictor_org = (inflictor.absmin+inflictor.absmax)*0.5;
-	if(inflictor.classname=="circfire")
+	if(inflictor.classname=="circfire"||inflictor.classname=="timebomb")
 		radius=150;
 	else
 		radius=damage+40;

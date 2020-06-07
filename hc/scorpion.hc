@@ -104,6 +104,28 @@ float ScorpionStandFrames[6] =
 
 // CODE --------------------------------------------------------------------
 
+void scorpion_raise()
+{
+float state;
+	state = RewindFrame($SCDead21,$SCDead1);
+	
+	self.think = self.th_raise;
+	
+	if (state==AF_BEGINNING) {
+		sound (self, CHAN_VOICE, "scorpion/death.wav", 1, ATTN_NORM);
+	}
+	if (state==AF_END) {
+		self.th_init();
+		monster_raisedebuff();
+		if (self.enemy!=world)
+			self.think=self.th_run;
+		else
+			self.think=self.th_stand;
+	}
+	
+	thinktime self : HX_FRAME_TIME;
+}
+
 //==========================================================================
 //
 // monster_scorpion_yellow
@@ -120,6 +142,8 @@ AMBUSH
 
 void monster_scorpion_yellow(void)
 {
+	if(!self.th_init)
+		self.th_init=monster_scorpion_yellow;
 	ScorpionInit(SCORPION_YELLOW);
 }
 
@@ -139,6 +163,8 @@ AMBUSH
 
 void monster_scorpion_black(void)
 {
+	if(!self.th_init)
+		self.th_init=monster_scorpion_black;
 	ScorpionInit(SCORPION_BLACK);
 }
 
@@ -156,8 +182,9 @@ void ScorpionInit(float type)
 		return;
 	}
 
-	if (!self.flags2 & FL_SUMMONED && !self.flags2&FL2_RESPAWN)
+	if (!self.flags2 & FL_SUMMONED &&!self.flags2&FL2_RESPAWN)
 		precache_scorpion();
+	
 	setmodel(self, "models/scorpion.mdl");
 
 	self.solid = SOLID_SLIDEBOX;
@@ -202,6 +229,7 @@ void ScorpionInit(float type)
 	self.th_melee = ScorpionMeleeDecide;
 	self.th_pain = ScorpionPainDecide;
 	self.th_die = ScorpionDieInit;
+	self.th_raise = scorpion_raise;
 
 	self.view_ofs = '0 0 12';
 
@@ -211,9 +239,8 @@ void ScorpionInit(float type)
 		self.skin = 1;
 	}
 	
+	self.buff=1;
 	walkmonster_start();
-	
-	ApplyMonsterBuff(self, FALSE);
 }
 
 //==========================================================================
@@ -235,6 +262,11 @@ void ScorpionStand(void)
 	ai_stand();
 	if(self.think != ScorpionStand)
 	{ // Wake up
+		/*if (self.playercontrolled && self.enemy=self.controller)	//ws: if summoned minion and already close to player, dont move further
+			if (range(self.controller)<=RANGE_MELEE && visible(self.controller)) {
+				self.think = self.th_stand;
+				return;
+			}*/
 		self.th_save = self.think;
 		self.think = ScorpionWake;
 		//sound(self, CHAN_VOICE, "scorpion/awaken.wav", 1, ATTN_NORM);
@@ -270,7 +302,7 @@ void ScorpionWalk(void) [++ $scwalk1..$scwalk16]
 		sound(self, CHAN_BODY, "scorpion/walk.wav", random(0.9, 1), ATTN_NORM);
 	}
 	ai_walk(2);
-	if(random()<0.1)
+	if(random()<0.33)
 		pitch_roll_for_slope('0 0 0');
 }
 
@@ -329,7 +361,7 @@ void ScorpionRunBlack(void) [++ $scwalk1..$scwalk16]
 	else self.attack_state = AS_STRAIGHT;
 
 	ai_run(8);
-	if(random()<0.1)
+	if(random()<0.33)
 		pitch_roll_for_slope('0 0 0');
 }
 
@@ -349,7 +381,7 @@ void ScorpionRun(void) [++ $scwalk1..$scwalk16]
 	}
 	
 	
-	if ((self.enemy.last_attack > time - 1) && (fov(self, self.enemy, 45)))
+	if ((self.enemy != self.controller) && (self.enemy.last_attack > time - 1) && (fov(self, self.enemy, 45)))
 	{
 		if (ScorpionCheckDefense()) 
 		{
@@ -369,7 +401,7 @@ void ScorpionRun(void) [++ $scwalk1..$scwalk16]
 
 	enemy_dist = vlen(self.enemy.origin - self.origin);
 	
-	if (enemy_dist < 120)
+	if (enemy_dist < 120 && (self.enemy != self.controller))
 	{
 		if ((random() < 0.33) && (infront(self.enemy)) && (self.cnt <= time))
 		{
@@ -389,7 +421,7 @@ void ScorpionRun(void) [++ $scwalk1..$scwalk16]
 	else self.attack_state = AS_STRAIGHT;
 
 	ai_run(6);
-	if(random()<0.1)
+	if(random()<0.33)
 		pitch_roll_for_slope('0 0 0');
 }
 //==========================================================================

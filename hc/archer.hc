@@ -115,6 +115,28 @@ float RED_ARROW = 1;
 float GOLD_ARROW = 2;
 float BLUE_ARROW = 3;
 
+void archer_raise()
+{
+float state;
+	state = RewindFrame($deathA21,$deathA1);
+	
+	self.think = self.th_raise;
+	
+	if (state==AF_BEGINNING) {
+		sound (self, CHAN_VOICE, "archer/death.wav", 1, ATTN_NORM);
+	}
+	if (state==AF_END) {
+		self.th_init();
+		monster_raisedebuff();
+		if (self.enemy!=world)
+			self.think=self.th_run;
+		else
+			self.think=self.th_stand;
+	}
+	
+	thinktime self : HX_FRAME_TIME;
+}
+
 float archer_check_shot(void)
 {
 	vector spot1,spot2;
@@ -260,7 +282,7 @@ void archer_dying (void) [++ $deathA1..$deathA22]
 	if (self.health < -80)
 	{
 		chunk_death();
-		remove(self);
+		return;
 	}
 
 	if (cycle_wrapped)
@@ -281,13 +303,9 @@ void() archer_die =
 	// check for gib
 	if (self.health < -30)
 	{
-		ThrowGib ("models/bloodpool.mdl", self.health);
 		ThrowGib ("models/blood.mdl", self.health);
 		ThrowGib("models/blood.mdl", self.health);
 		ThrowGib("models/blood.mdl", self.health);
-		//archer_gibs();
-		//BloodSplat();
-		//ThrowGib (self.headmodel, self.health);
 		chunk_death();
 		return;
 	}
@@ -438,7 +456,8 @@ vector spot1, spot2;
 	if (self.frame == $fire2)	// FIRE!!!!
 	{
 		makevectors(self.angles);	
-		spot1 = self.origin + v_forward*4 + v_right * 10 + v_up * 36;
+		//spot1 = self.origin + v_forward*4 + v_right * 10 + v_up * 36;
+		spot1 = self.origin + self.proj_ofs + v_right*10 + v_forward*4;
 		if(self.classname=="monster_archer_lord"||(self.netname=="monster_archer_ice"&&random()<0.3))
 		{
 			tspeed=vlen(self.enemy.velocity);
@@ -778,15 +797,11 @@ void monster_archer ()
 		return;
 	}
 
-	/*if(!self.th_init)
-	{
+	if(!self.th_init)
 		self.th_init=monster_archer;
-		self.init_org=self.origin;
-	}*/
+	
 	if (!self.flags2 & FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
-	{
 		precache_archer();
-	}
 
 	if(!self.health)
 		self.health = 80;
@@ -806,6 +821,7 @@ void monster_archer ()
 	self.th_melee = archerdraw;
 	self.th_missile = archerdraw;
 	self.th_pain = archer_pain;
+	self.th_raise = archer_raise;
 	self.decap = 0;
 
 	if(!self.speed)
@@ -823,10 +839,12 @@ void monster_archer ()
 	self.experience_value = self.init_exp_val = 25;
 
 	self.flags (+) FL_MONSTER;
+	self.proj_ofs = '0 0 36';
 	self.view_ofs = '0 0 40';
 
 	self.hull=HULL_PLAYER;
 	
+	self.buff=1;
 	walkmonster_start();
 }
 
@@ -849,37 +867,17 @@ void monster_archer_lord ()
 		return;
 	}
 
-	/*if(!self.th_init)
-	{
+	if(!self.th_init)
 		self.th_init=monster_archer_lord;
-		self.init_org=self.origin;
-	}*/
+	
 	if (!self.flags2 & FL_SUMMONED&&!self.flags2&FL2_RESPAWN)
-	{
-		precache_model("models/archer.mdl");
-		precache_model("models/archerhd.mdl");
-
-		precache_model("models/gspark.spr");
-
-		precache_sound ("archer/arrowg.wav");
-		precache_sound ("archer/arrowr.wav");
-
-		precache_sound ("archer/growl2.wav");
-		precache_sound ("archer/growl3.wav");
-		precache_sound ("archer/growl4.wav");
-		precache_sound ("archer/pain2.wav");
-		precache_sound ("archer/sight2.wav");
-		precache_sound ("archer/death2.wav");
-		precache_sound ("archer/draw.wav");
-	}
+		precache_archerlord();
 
 	if(!self.experience_value)
-		self.experience_value = 50;
-		//self.experience_value = 200;
+		self.experience_value = 100;	//200
 	if(!self.health)
-		self.health = 160;
-		//self.health = 325;
-	//ws - reduced health to 2x normal
+		self.health = 240;	//325
+	//ws - reduced health to 3x normal
 
 	CreateEntityNew(self,ENT_ARCHER,"models/archer.mdl",archer_die);
 
@@ -890,6 +888,7 @@ void monster_archer_lord ()
 	self.th_melee = archerdraw;
 	self.th_missile = archerdraw;
 	self.th_pain = archer_pain;
+	self.th_raise = archer_raise;
 	self.decap = 0;
 	self.headmodel = "models/archerhd.mdl";
 	if(!self.spawnflags&ARCHER_STUCK)
@@ -903,10 +902,12 @@ void monster_archer_lord ()
 
 	self.flags (+) FL_MONSTER;
 	self.yaw_speed = 10;
+	self.proj_ofs = '0 0 36';
 	self.view_ofs = '0 0 40';
 
 	self.init_exp_val = self.experience_value;
 	
+	self.buff=2;
 	walkmonster_start();
 }
 
@@ -924,11 +925,8 @@ Dislikes: Sunshine and happiness
 */
 void monster_archer_ice ()
 {
-	/*if(!self.th_init)
-	{
+	if(!self.th_init)
 		self.th_init=monster_archer_ice;
-		self.init_org=self.origin;
-	}*/
 	self.netname=self.classname;
 	self.classname="monster_archer";
 	monster_archer();

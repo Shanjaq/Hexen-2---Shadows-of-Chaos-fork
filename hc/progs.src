@@ -184,20 +184,22 @@ faspell.hc      // Fallen angel stuff
 fablade.hc
 fangel.hc
 
-//new additions
+//SoC additions
 yakman.hc
 deathknight.hc
 disciple.hc
 bishop.hc
 afrit.hc
+wendigo.hc
+undying.hc
+objects_new.hc
+triggers_new.hc
+
+//models by Razumen, code by whirledtsar
 maulotaur.hc
 reiver.hc
-undying.hc
-wendigo.hc
-objects_new.hc
 
 eric.hc
-
 // Peanut ALL NEW CODE
 p_multim.hc
 // Peanut End of new code

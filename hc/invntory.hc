@@ -297,7 +297,7 @@ void Use_Proximity_Mine ()
 	self.glyph_finished=time+0.5;
 	newmis=spawn();
 	newmis.owner=self;
-	sound (self,CHAN_VOICE,"fx/glyphuse1.wav",1,ATTN_NORM);
+	sound (self,CHAN_ITEM,"fx/glyphuse1.wav",1,ATTN_NORM);
 	newmis.classname="proximity";
 	newmis.movetype=MOVETYPE_FLYMISSILE;
 	newmis.solid=SOLID_BBOX;
@@ -336,7 +336,7 @@ void TimeBombTouch()
 {
 	if(!other.takedamage)
 		return;
-	//self.dmg/=2;
+	self.dmg/=2;
 	T_Damage(other,self,self.owner,self.dmg);
 	TimeBombBoom();
 }
@@ -344,18 +344,17 @@ void TimeBombTouch()
 void Use_TimeBomb()
 {
 	self.glyph_finished = time+0.1;
+	sound (self,CHAN_ITEM,"fx/glyphuse1.wav",1,ATTN_NORM);
+	
 	newmis=spawn();
 	newmis.owner=self;
 	newmis.enemy=world;
 	newmis.classname="timebomb";
-	sound (self,CHAN_VOICE,"fx/glyphuse1.wav",1,ATTN_NORM);
 	newmis.solid=SOLID_BBOX;
-	/*if(deathmatch&&!coop)
+	if(deathmatch&&!coop)
 		newmis.dmg=100;
 	else
-		newmis.dmg=75;
-	newmis.dmg=60;*/
-	newmis.dmg=100;
+		newmis.dmg=60;	//75
 	newmis.touch=TimeBombTouch;
 	newmis.angles_x=90;
 	newmis.avelocity_y=100;
@@ -404,8 +403,8 @@ void UseBlast (void)
 				traceline(self.origin,victim.origin,TRUE,self);
 
 				if (trace_fraction == 1)  // No walls in the way
-				{
-					sound (self, CHAN_WEAPON, "raven/blast.wav", 1, ATTN_NORM);
+				{	//ws: changed from chan_weapon
+					sound (self, CHAN_ITEM, "raven/blast.wav", 1, ATTN_NORM);
 					
 					if (((victim.movetype != MOVETYPE_FLYMISSILE) && (victim.movetype != MOVETYPE_BOUNCEMISSILE)) || (victim.classname =="chain_head" ))
 					{	
@@ -444,6 +443,8 @@ void UseBlast (void)
 							victim.velocity = victim.velocity * -1;
 							victim.angles = vectoangles(victim.velocity);
 						}
+						if(victim.movedir!='0 0 0')
+							victim.movedir=normalize(victim.velocity);
 					}
 
 					holdpos = victim.origin;
@@ -469,12 +470,15 @@ void UseBlast (void)
 			thinktime victim : 0;
 		}
 		//ws: disc of repulsion forces some monsters (eg. archer, mezzo, scorpion) into think state preventing them from attacking until theyre on ground
-		if (victim.th_jump && victim.health && victim.flags & FL_MONSTER && push>1)
+		if (victim.th_jump && victim.health && victim.flags & FL_MONSTER && push>1 &&
+			(victim.think==victim.th_missile || victim.think==victim.th_melee || victim.think==victim.th_run || victim.think==victim.th_stand) )
 		{
 			victim.think=victim.th_jump;
 			thinktime victim : 0;
 		}
 
+		if(victim.classname=="pincer")
+			victim.enemy=victim.owner;
 		victim = victim.chain;
 	}
 
@@ -533,7 +537,7 @@ void BreakChains()
 void UseInventoryItem (void)
 {
 
-	if ((self.health <= 0) || (self.predebt == 1))
+	if (self.health <= 0)
 		return;
 
 	if(self.flags2&FL_CHAINED&&self.inventory!=INV_TELEPORT&&self.inventory!=INV_BLAST)
@@ -914,10 +918,6 @@ void  DropInventoryItem (void)
 		makevectors(self.v_angle);
 		setorigin(item,self.origin + self.proj_ofs + v_up * 10 + v_forward * 40 + v_right * 8);
 		
-		if (holdent.predebt == 1) {
-			holdent.debt -= item_value[holdent.inventory];
-		}
-
 		sound(self,CHAN_BODY,"misc/whoosh.wav",1,ATTN_NORM);
 	}
 	else

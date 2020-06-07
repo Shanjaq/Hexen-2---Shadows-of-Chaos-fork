@@ -9,7 +9,6 @@ void() player_pain;
 void (vector org, entity death_owner) spawn_tdeath;
 void() DecrementSuperHealth;
 void CheckRings (void);
-void () multiply_monsters;
 
 
 void FreezeAllEntities(void)
@@ -307,7 +306,7 @@ void FindDMLevel(void)
 
 void() changelevel_touch =
 {
-	if ( (other.classname != "player") || (other.shopping == 1) )
+	if (other.classname != "player")//||(!infront_of_ent(self,other)))
 		return;
 
 	/* noexit is only for dm - from Maddes' QuakeC patches: */
@@ -489,25 +488,6 @@ entity() SelectSpawnPoint =
 	float  pcount;
 	float ok;
 
-	if ((multim == 0.00000) && (!deathmatch))
-	{
-		multiply_monsters();
-		multim = 1.00000;
-		dprint("BARF25\n");
-	}
-
-	make_mage(self);
-
-	//shan place shop return portal
-	if (mapname == "peanutshop")
-		magic_shop_portal();
-	
-	if (self.tele_dropped == 1) {
-		self.tele_dropped = 0;
-	}
-	self.onfire = 1;
-	self.magic_finished = (time + 0.2);
-
 // testinfo_player_start is only found in regioned levels
 	spot = find (world, classname, "testplayerstart");
 	if (spot)
@@ -635,6 +615,7 @@ entity spot;
 //	else if(self.sv_flags)
 //		serverflags=self.sv_flags;
 	parm16 = self.state;	//ws: config parm flags system
+	client_ready = TRUE;	//ws: monsters check this to know when to check client config parm flags
 
 	self.classname = "player";
 	self.takedamage = DAMAGE_YES;
@@ -848,6 +829,7 @@ entity spot;
 	}
 	
 	parm16 = self.state;	//ws: config parm flags system
+	client_ready = TRUE;	//ws: monsters check this to know when to check client config parm flags
 
 	// Need to reset these because they could still point to entities in the previous map
 	self.enemy = self.groundentity = self.chain = self.goalentity = self.dmg_inflictor = self.ladder =
@@ -866,7 +848,6 @@ entity spot;
 	self.viewentity=self;
 	self.wallspot='0 0 0';
 	self.deathtype="";
-	self.glyph_finished =
 	self.act_state =
 	self.onfire=
 	self.healthtime=
@@ -910,7 +891,9 @@ entity spot;
 	self.camptime+= TimeDiff;
 	self.last_attack= self.attack_finished=0;
 	
-	self.whiptime = 0;
+	self.whiptime =
+	self.movetime = 	/*timer for blood footsteps sound effect*/
+	self.glyph_finished = 0; /*delay between glyph uses*/
 
 	self.light_level = 128;		// So the assassin doesn't go invisible coming out of the teleporter
 
@@ -923,11 +906,6 @@ entity spot;
 
 	spot = SelectSpawnPoint ();
 	setorigin(self, spot.origin + '0 0 1');
-	if (self.blizzcount == 1) {
-		setorigin(self, (self.pos2 + '0.00000 0.00000 1.00000'));
-		sprint(self, vtos(self.pos2));
-		self.blizzcount = 0;
-	}
 	self.angles = spot.angles;
 	self.fixangle = TRUE;		// turn this way immediately
 
@@ -948,10 +926,6 @@ entity spot;
 	W_SetCurrentAmmo ();
 
 	force_retouch = 2;		// make sure even still objects get hit
-
-	if ( (world.model == "maps/peanutshop.bsp") ) {
-		stuffcmd(self, "bgmvolume 0.45\nmusic bassdemo\n");
-	}
 	
 	//reset armor
 	ApplyNaturalArmor(self);
@@ -1396,6 +1370,8 @@ void() WaterMove =
 
 void CheckCrouch (void)
 {
+	if (self.onladder)
+		return;
 	if ((self.crouch_time) && (self.crouch_time < time))  // Time to crouch or uncrouch a little
 	{
 		if (self.hull==HULL_CROUCH) // Player crouching
@@ -1654,10 +1630,17 @@ void() PlayerPreThink =
 	//----------------------------------------------------------------------
 	if (self.onladder) {
 		self.onladder = FALSE;	// Reset ladder touch function
-		if (self.button2) {		// Is jump key being pressed?
+		float crouching;
+		crouching = self.flags2 & FL2_CROUCHED;
+		if (self.button2 || crouching) {		// Is jump key being pressed?
 			// Reset velocity upwards and all sideways movement so that the player stays on the ladder and climbs straight up with very little sidways movement
 			self.velocity = '0 0 0';
-			self.velocity_z = self.ladder.speed;
+			self.velocity_z = self.ladder.speed * self.hasted;
+			if (crouching) {					//ws: if pressing crouch button, move down ladder
+				self.velocity_z *= (-1);
+				if (self.hull=HULL_CROUCH)		//ws: if in actual crouch state, return to normal once on ladder
+					PlayerUnCrouching();
+			}
 			self.gravity = 0.0000001;
 
 			if (self.count < time) {
@@ -2821,6 +2804,11 @@ string deathstring, deathstring2,iclass;
 		else if (targ.deathtype == "oil")
 		{
 			bprint (" got deep fried in hot oil\n");
+			return;
+		}
+		else if (targ.deathtype == "impaled")
+		{
+			bprint (" has a shiny new hole through their chest\n");
 			return;
 		}
 

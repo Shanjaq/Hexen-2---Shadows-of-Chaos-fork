@@ -83,8 +83,66 @@ void skullwiz_blink(void);
 void skullwiz_push (void);
 void skullwiz_missile_init (void);
 
+void monster_raiseinit (entity corpse);
+
 float SKULLBOOK  =0;
 float SKULLHEAD  =1;
+
+entity skullwiz_findcorpse ()
+{
+entity corpse;
+	corpse = findradius(self.origin, 288);
+	while(corpse)
+	{
+		if (corpse.th_raise && corpse.th_init && corpse.think == CorpseThink && !corpse.preventrespawn) {
+			if (corpse.classname!="monster_undying" && corpse.decap)
+				return world;	//dont revive decapitated corpses besides undying
+			
+			return corpse;
+		}
+		corpse = corpse.chain;
+	}
+	return world;
+}
+
+void skullwiz_raise(void)
+{
+entity risen;
+	risen = skullwiz_findcorpse();
+	if (risen==world)
+		return;
+		
+	risen.enemy = self.enemy;
+	risen.controller = self;
+	monster_raiseinit(risen);
+}
+
+void skullwiz_raiseinit (void) [++ $skgate1..$skgate30]
+{
+	self.think = skullwiz_raiseinit;
+	
+	if (self.frame == $skgate2) {
+		entity ring;
+		ring = spawn();
+		setorigin (ring, self.origin);
+		ring.owner = self;
+		ring.lifetime = time + .8;
+		setmodel(ring, "models/proj_ringshock.mdl");
+		ring.think = shockwave;
+		thinktime ring : .1;
+		
+		sound (ring, CHAN_BODY, "skullwiz/gate.wav", 1, ATTN_NORM);
+	}
+
+	if (self.frame >= $skgate10 && self.frame <= $skgate23) {
+		skullwiz_raise();
+	}
+
+	if (cycle_wrapped) {
+		self.glyph_finished=time+5;		//dont raise corpses again until this timer is up
+		skullwiz_run();
+	}
+}
 
 float() SkullFacingIdeal =
 {
@@ -199,7 +257,6 @@ void skullwiz_throw(float part)
 	new.nextthink = time + HX_FRAME_TIME * 15;
 }
 
-
 void()skullwiz_summon;
 void spider_spawn (float spawn_side)
 {
@@ -303,7 +360,6 @@ void spider_grow(void)
 		walkmonster_start();
 }
 
-
 void skullwiz_summon(void)
 {
 	vector newangle,spot1,spot2,spot3;
@@ -326,8 +382,8 @@ void skullwiz_summon(void)
 	self.lifetime = time + 30;
 
 	self.skin = 1;
-	self.health = 5;
-	self.experience_value = SpiderExp[1];
+	self.health = self.max_health = 5;
+	self.init_exp_val = self.experience_value = SpiderExp[1];
 
 	self.drawflags = SCALE_ORIGIN_BOTTOM;
 	self.spawnflags (+) JUMP;
@@ -346,8 +402,6 @@ void skullwiz_summon(void)
 	self.th_melee = SpiderMeleeBegin;
 	self.th_missile = SpiderJumpBegin;
 	self.th_pain = SpiderPain;
-	/*self.th_possum = spider_playdead;
-	self.th_possum_up = spider_possum_up;*/
 	self.classname = "monster_spider_yellow_small";
 
 	self.flags (+) FL_MONSTER;
@@ -403,8 +457,9 @@ void skullwiz_summon(void)
 	}
 	self.scale = 0.1;
 
-	setorigin(self,spot2);	
-	//reateWhiteSmoke (self.origin+'0 0 3','0 0 8');
+	setorigin(self,spot2);
+	
+	//CreateWhiteSmoke (self.origin+'0 0 3','0 0 8');
 
 	sound (self, CHAN_VOICE, "skullwiz/gate.wav", 1, ATTN_NORM);
 
@@ -413,7 +468,7 @@ void skullwiz_summon(void)
 
 void skullwiz_summoninit (void) [++ $skgate1..$skgate30]
 {
-
+	thinktime self : HX_FRAME_TIME*0.5;	//ws: speed up animation
 	if (self.frame == $skgate2)   // Gate in the creatures
 		sound (self, CHAN_VOICE, "skullwiz/gatespk.wav", 1, ATTN_NORM);
 
@@ -421,7 +476,7 @@ void skullwiz_summoninit (void) [++ $skgate1..$skgate30]
 	{
 		spider_spawn(0);
 
-		if (random() < 0.15 || self.bufftype & BUFFTYPE_LEADER)   // 15% chance he'll do another
+		if (random() < 0.15 || coop || self.bufftype & BUFFTYPE_LEADER)   // 15% chance he'll do another
 		{
 			spider_spawn(1);
 		}
@@ -560,9 +615,7 @@ void SkullMissile_Twist(void)
 	}
 	
 	if (self.owner.bufftype & BUFFTYPE_LEADER)
-	{
 		HomeThink();
-	}
 }
 
 /*-----------------------------------------
@@ -682,7 +735,9 @@ void skullwiz_missile (void) [++ $skspel2..$skspel30]
   -----------------------------------------*/
 void skullwiz_missile_init (void) [++ $skredi1..$skredi12]
 {
-
+	if (self.classname=="monster_skull_wizard_lord" && skullwiz_findcorpse()!=world)
+		skullwiz_raiseinit();
+	
 	self.frame += 2;
 
 	if (cycle_wrapped)
@@ -721,7 +776,8 @@ void skullwiz_blinkin(void)
 		//restore monster effects
 		ApplyMonsterBuffEffect(self);
 		
-		self.counter = time+1;	//ws: dont teleport again immediately, give player a little time to retaliate
+		self.counter = time+1;			//ws: dont teleport again immediately, give player a little time to retaliate
+		self.glyph_finished = time+1;	//also dont immediately revive corpses
 		
 		skullwiz_run();
 	}
@@ -779,13 +835,21 @@ float loop_cnt,forward,dot;
 		else
 			spot1 = self.origin;
 
-		forward = random(120,200);
-		spot2 = spot1 + (v_forward * forward);
-		traceline (spot1, spot2 + (v_forward * 30) , FALSE, self.enemy);
+		//forward = random(120,200);
+		//spot2 = spot1 + (v_forward * forward);
+		//traceline (spot1, spot2 + (v_forward * 30) , FALSE, self);
+		forward = random((self.size_x + self.size_y),200.00000);
+		spot2 = (spot1 + (v_forward * forward) + (v_up * forward));
+		traceline ( spot1, (spot2 + (v_forward * ((self.size_x + self.size_y) * 0.5))), TRUE, self);
 		if (trace_fraction == 1.0) //  Check no one is standing where monster wants to be
 		{
+			traceline ( spot2, (spot2 - (v_up * (forward * 2.00000))), TRUE, self);
+			spot2 = trace_endpos;
+			
    			makevectors (newangle);
-			tracearea (spot2,spot2 + v_up * 80,'-32 -32 -10','32 32 46',FALSE,self);
+			//tracearea (spot2,spot2 + v_up * 80,'-32 -32 -10','32 32 46',FALSE,self);
+			tracearea (spot2, (spot2 + (v_up * 80)), self.orgnl_mins-'8 8 0', self.orgnl_maxs+'8 8 0', FALSE, self);	//self.enemy
+			
 			if ((trace_fraction == 1.0) && (!trace_allsolid)) // Check there is a floor at the new spot
 			{
 				spot3 = spot2 + (v_up * -4);
@@ -795,26 +859,31 @@ float loop_cnt,forward,dot;
 				{
 					trace_fraction = 0;   // So it will loop
 				}
-				else 
+				else
 				{
    					makevectors (newangle);
-					traceline (spot1, spot2, FALSE, self.enemy);
+					traceline (spot1, spot2, FALSE, self);
 
 					if (trace_fraction == 1.0)
 					{
-						setsize(self, '-24 -24 0', '24 24 64');
-						self.hull = 2;
+						setsize (self, self.orgnl_mins, self.orgnl_maxs);
 						self.solid = SOLID_SLIDEBOX;
 						setorigin(self,spot2);
-
+						droptofloor();	//ws: dont float above ground? not sure if this is effective
+						
 						if (walkmove(self.angles_y, .05, TRUE))		// You have to move it a little bit to make it solid
-							trace_fraction = 1;   // So it will end loop					
+						{
+							trace_fraction = 1;   // So it will end loop
+						}
 						else
-							trace_fraction = 0;   // So it will loop					
+						{
+							trace_fraction = 0;   // So it will loop
+							self.solid = SOLID_NOT;		//ws: Unset solid to prevent player from getting stuck
+						}
 					}
 					else
 					{
-						trace_fraction = 0;   // So it will loop					
+						trace_fraction = 0;   // So it will loop
 					}
 				}
 			}
@@ -894,7 +963,6 @@ void skullwiz_blink(void) [++ $sktele2..$sktele30]
 		self.aflag=FALSE;
 		self.takedamage = DAMAGE_NO;  // So t_damage won't force him into another state 
 		self.scale = 1;
-		
 		if (self.bufftype & BUFFTYPE_LARGE)
 			self.scale = self.tempscale;
 		
@@ -967,7 +1035,7 @@ void skullwiz_melee (void) [++ $skspel2..$skspel30]
 		}
 		else  // Only the skull wizard lord can summon
 		{
-			if (random()< 0.15)
+			if (random()< 0.25)		//vanilla: 0.15
 				skullwiz_summoninit();
 			else
 			{
@@ -1010,6 +1078,12 @@ void skullwiz_run (void) [++ $skwalk1..$skwalk24]
 			sound (self, CHAN_VOICE, "skullwiz/growl.wav", 1, ATTN_NORM);
 		else
 			sound (self, CHAN_VOICE, "skullwiz/growl2.wav", 1, ATTN_NORM);
+	}
+	
+	if (self.classname=="monster_skull_wizard_lord" && time>self.glyph_finished)
+	{	//ws: lord wizards can revive dead bodies
+		if (skullwiz_findcorpse()!=world)
+			skullwiz_raiseinit();
 	}
 
 	delta = self.enemy.origin - self.origin;
@@ -1073,7 +1147,6 @@ void skullwizard_init(void)
 		precache_model("models/skulbook.mdl");
 		precache_model("models/skulhead.mdl");
 		precache_model("models/skulshot.mdl");
-		precache_model("models/spider.mdl");
 
 		if (self.classname == "monster_skull_wizard")
 		{
@@ -1082,7 +1155,6 @@ void skullwizard_init(void)
 			precache_sound("skullwiz/growl.wav");
 			precache_sound("skullwiz/scream.wav");
 			precache_sound("skullwiz/pain.wav");
-//	precache_sound("spider/death.wav");
 		}	
 		else
 		{
@@ -1100,8 +1172,7 @@ void skullwizard_init(void)
 		precache_sound("skullwiz/push.wav");
 		precache_sound("skullwiz/firemisl.wav");
 
-		precache_spider ();
-
+		precache_spider();
 	}
 
 	setmodel(self, "models/skullwiz.mdl");
@@ -1121,6 +1192,8 @@ void skullwizard_init(void)
 	self.th_die = skullwiz_die;
 
 	setsize(self, '-24 -24 0', '24 24 64');
+	self.orgnl_mins = self.mins;
+	self.orgnl_maxs = self.maxs;
 	self.hull = 2;
 
 	self.flags(+)FL_MONSTER;
@@ -1148,10 +1221,10 @@ void monster_skull_wizard (void)
 	self.health = 150;
 	self.experience_value = 100;
 	self.monsterclass = CLASS_GRUNT;
+	self.th_init = monster_skull_wizard;
 	
+	self.buff=2;
 	walkmonster_start();
-	
-	ApplyMonsterBuff(self, TRUE);
 }
 
 /*QUAKED monster_skull_wizard_lord (1 0.3 0) (-24 -24 0) (24 24 64) AMBUSH
@@ -1170,12 +1243,15 @@ void monster_skull_wizard_lord (void)
 
 	skullwizard_init();
 
-	self.health = 600;
-	self.experience_value = 400;
+	self.health = 600;				//vanilla: 650
+	self.experience_value = 300;	//vanilla: 325
 	self.monsterclass = CLASS_LEADER;
 	self.skin = 1;
 	self.scale = 1.20;
+	//setsize (self, self.mins*self.scale, self.maxs*self.scale);
+	self.th_init = monster_skull_wizard_lord;
+	
+	self.buff=1;
 	walkmonster_start();
-
-	ApplyMonsterBuff(self, TRUE);
 }
+
