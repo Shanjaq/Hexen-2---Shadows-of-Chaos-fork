@@ -1,12 +1,11 @@
+float MIST_STARTOFF = 2;
 
 float IS_SKELETON = 2;
 
 float PORTAL_CLOSED = 2;
 
 float WATER_OFF = 2;
-
 float WATER_TRANS = 4;
-
 float WATER_FULLBR = 8;
 
 .float modeltype;
@@ -36,7 +35,6 @@ void()	fire_burn11	=[	10,	fire_burn12	] {};
 void()	fire_burn12	=[	11,	fire_burn13	] {};
 void()	fire_burn13	=[	12,	fire_burn14	] {};
 void()	fire_burn14	=[	13,	fire_burn1	] {CreateWhiteSmoke(self.origin + '0 0 56','0 0 8',HX_FRAME_TIME * 2);};
-
 
 void()	star_sparkle1	=[	0,	star_sparkle2	] {};
 void()	star_sparkle2	=[	1,	star_sparkle3	] {};
@@ -163,79 +161,41 @@ void()	portal_open23	=[	22,	portal_open24	] {};
 void()	portal_open24	=[	23,	portal_open25	] {};
 void()	portal_open25	=[	24,	portal_anim1	] {};
 
-void()	water_start1	=[	1,	water_start2	] {if (self.modeltype == 1) setmodel (self, "models/waterfall2.mdl"); else setmodel (self, "models/waterfall.mdl");};
-void()	water_start2	=[	2,	water_start3	] {};
-void()	water_start3	=[	3,	water_start4	] {sound (self, CHAN_ITEM, "fx/wfstart.wav", 1, ATTN_NORM);};
-void()	water_start4	=[	4,	water_start5	] {};
-void()	water_start5	=[	5,	water_start6	] {};
-void()	water_start6	=[	6,	water_start7	] {};
-void()	water_start7	=[	7,	water_start8	] {};
-void()	water_start8	=[	8,	water_start9	] {};
-void()	water_start9	=[	9,	water_start10	] {};
-void()	water_start10	=[	10,	water_start11	] {};
-void()	water_start11	=[	11,	water_start12	] {};
-void()	water_start12	=[	12,	water_start13	] {};
-void()	water_start13	=[	13,	water_start14	] {};
-void()	water_start14	=[	14,	water_start15	] {};
-void()	water_start15	=[	15,	water_start16	] {};
-void()	water_start16	=[	16,	water_start17	] {};
-void()	water_start17	=[	17,	water_start18	] {};
-void()	water_start18	=[	18,	water_start19	] {};
-void()	water_start19	=[	19,	water_start20	] {};
-void()	water_start20	=[	20,	water_start21	] {};
-void()	water_start21	=[	21,	water_start22	] {};
-void()	water_start22	=[	22,	water_start23	] {};
-void()	water_start23	=[	23,	water_start24	] {};
-void()	water_start24	=[	24,	water_start25	] {};
-void()	water_start25	=[	25,	water_start26	] {};
-void()	water_start26	=[	26,	water_fall1	] {};
+void water_fall ()
+{
+	AdvanceFrame(42,67);
+	self.think = water_fall;
+	thinktime self : self.wait;
+}
 
-void() water_idle1	=[	0,	water_idle1	] {};
+void water_start ()
+{
+float result;
+	result = AdvanceFrame(1,26);
+	if (self.frame <= 1) {
+		self.think = water_start;
+		if (self.modeltype == 1)
+			setmodel (self, "models/waterfall2.mdl");
+		else
+			setmodel (self, "models/waterfall.mdl");
+	}
+	else if (self.frame==3)
+		sound (self, CHAN_ITEM, "fx/wfstart.wav", 1, ATTN_NORM);
+	
+	if (result == AF_END)
+		self.think = water_fall;
+	
+	thinktime self : self.wait;
+}
 
-
-void()	water_stop1	=[	27,	water_stop2	] {};
-void()	water_stop2	=[	28,	water_stop3	] {sound (self, CHAN_ITEM, "fx/wfend.wav", 1, ATTN_NORM);};
-void()	water_stop3	=[	29,	water_stop4	] {};
-void()	water_stop4	=[	30,	water_stop5	] {};
-void()	water_stop5	=[	31,	water_stop6	] {};
-void()	water_stop6	=[	32,	water_stop7	] {};
-void()	water_stop7	=[	33,	water_stop8	] {};
-void()	water_stop8	=[	34,	water_stop9	] {};
-void()	water_stop9	=[	35,	water_stop10	] {};
-void()	water_stop10	=[	36,	water_stop11	] {};
-void()	water_stop11	=[	37,	water_stop12	] {};
-void()	water_stop12	=[	38,	water_stop13	] {};
-void()	water_stop13	=[	39,	water_stop14	] {};
-void()	water_stop14	=[	40,	water_stop15	] {};
-void()	water_stop15	=[	41,	water_stop16	] {};
-void()	water_stop16	=[	41,	water_stop16	] {};
-
-void()	water_fall1	=[	42,	water_fall2	] {};
-void()	water_fall2	=[	43,	water_fall3	] {};
-void()	water_fall3	=[	44,	water_fall4	] {};
-void()	water_fall4	=[	45,	water_fall5	] {};
-void()	water_fall5	=[	46,	water_fall6	] {};
-void()	water_fall6	=[	47,	water_fall7	] {};
-void()	water_fall7	=[	48,	water_fall8	] {};
-void()	water_fall8	=[	49,	water_fall9	] {};
-void()	water_fall9	=[	50,	water_fall10	] {};
-void()	water_fall10	=[	51,	water_fall11	] {};
-void()	water_fall11	=[	52,	water_fall12	] {};
-void()	water_fall12	=[	53,	water_fall13	] {};
-void()	water_fall13	=[	54,	water_fall14	] {};
-void()	water_fall14	=[	55,	water_fall15	] {};
-void()	water_fall15	=[	56,	water_fall16	] {};
-void()	water_fall16	=[	57,	water_fall17	] {};
-void()	water_fall17	=[	58,	water_fall18	] {};
-void()	water_fall18	=[	59,	water_fall19	] {};
-void()	water_fall19	=[	60,	water_fall20	] {};
-void()	water_fall20	=[	61,	water_fall21	] {};
-void()	water_fall21	=[	62,	water_fall22	] {};
-void()	water_fall22	=[	63,	water_fall23	] {};
-void()	water_fall23	=[	64,	water_fall24	] {};
-void()	water_fall24	=[	65,	water_fall25	] {};
-void()	water_fall25	=[	66,	water_fall26	] {};
-void()	water_fall26	=[	67,	water_fall1	] {};
+void water_stop ()
+{
+	self.think = water_stop;
+	if (AdvanceFrame(27,41) == AF_END)
+		self.think = SUB_Null;
+	
+	thinktime self : self.wait;
+}
 
 void()	corpse_swing1	=[	0,	corpse_swing2	] {};
 void()	corpse_swing2	=[	1,	corpse_swing3	] {};
@@ -261,13 +221,15 @@ void()	corpse_die2	=[	0,	corpse_die2	] {SUB_Remove;};
 
 void() object_start =
 {
-// delay drop to floor to make sure all doors have been spawned
-// spread think times so they don't all happen at same time
 	self.takedamage=DAMAGE_YES;
 	self.flags2(+)FL_ALIVE;
-
-	if(self.scale<=0)
-		self.scale=1;
+	
+	if (self.scale)
+		ScaleBoundingBox (self.scale, self, 0);
+	
+	if (self.th_die)
+		self.use = self.th_die;
+	
 	self.th_stand ();
 };
 
@@ -276,7 +238,6 @@ void() obj_hang_corpse =
 	precache_model ("models/hangass.mdl");
 	precache_model ("models/hangskel.mdl");
 	
-	//precache_sound ("death_knight/sword1.wav");
 	//precache_sound ("fx/bonebrk.wav");
 
 	self.solid = SOLID_BBOX;
@@ -300,7 +261,7 @@ void() obj_hang_corpse =
 	self.th_pain = corpse_swing1;
 	self.netname="hanged";
 	
-	self.flags (+) FL_MONSTER | FL_FLY;
+	self.flags (+) FL_FLY;
 	
 	object_start();
 };
@@ -308,8 +269,6 @@ void() obj_hang_corpse =
 void() obj_skeleton_body =
 {
 	precache_model ("models/skeleton1.mdl");
-	
-	//precache_sound ("death_knight/sword1.wav");
 	//precache_sound ("fx/bonebrk.wav");
 
 	self.solid = SOLID_BBOX;
@@ -322,10 +281,9 @@ void() obj_skeleton_body =
 	
 	self.th_stand = corpse_idle1;
 	self.th_die = corpse_die1;
-	//self.th_pain = corpse_swing1;
 	self.netname="skeleton";
 	
-	self.flags (+) FL_MONSTER | FL_FLY;
+	self.flags (+) FL_FLY;
 	
 	object_start();
 };
@@ -338,7 +296,6 @@ void() misc_portal =
 
 	setmodel (self, "models/port.spr");
 	self.th_stand = portal_spin1;
-	//self.flags (+) FL_MONSTER | FL_FLY;
 	self.th_stand();
 	
 	self.netname="portal";
@@ -352,19 +309,16 @@ void() misc_portal_big =
 	self.takedamage=DAMAGE_YES;
 
 	setmodel (self, "models/telefx.spr");
-	//setmodel (self, "models/hangass.mdl");
 	if (self.spawnflags & PORTAL_CLOSED)
 		self.th_stand = portal_close26;
 	else
 		self.th_stand = portal_anim1;
-	//self.th_stand = corpse_swing1;
-	//self.th_die = corpse_die1;
 	if (self.targetname)
 		if (self.spawnflags & PORTAL_CLOSED)
 			self.use = portal_open1;
 	else
 		self.use = portal_close1;
-	self.flags (+) FL_MONSTER | FL_FLY;
+	self.flags (+) FL_FLY;
 	self.th_stand();
 	
 	self.netname="portalbig";
@@ -377,11 +331,10 @@ void() misc_starwall =
 	
 	self.th_stand = star_sparkle1;
 	self.netname="magic barrier";
-	self.flags (+) FL_MONSTER | FL_FLY;
+	self.flags (+) FL_FLY;
 	self.th_stand();
 	if (self.targetname)
 		self.use = SUB_Remove;
-	
 };
 
 void() misc_waterfall =
@@ -396,18 +349,17 @@ void() misc_waterfall =
 		setmodel (self, "models/waterfall2.mdl");
 	else
 		setmodel (self, "models/waterfall.mdl");
-		
+	
 	if (self.spawnflags & WATER_OFF)
 	{
 		setmodel (self, "");
-		self.th_stand = water_stop15;
-	}	
+		self.th_stand = SUB_Null;
+	}
 	else
-		self.th_stand = water_fall1;
-	//self.think();
+		self.th_stand = water_fall;
+	
 	self.netname="waterfall";
-	self.flags (+) FL_MONSTER | FL_FLY;
-	//self.th_stand();
+	self.flags (+) FL_FLY;
 	
 	if (self.spawnflags & WATER_TRANS)
 		self.drawflags (+) DRF_TRANSLUCENT;
@@ -416,37 +368,23 @@ void() misc_waterfall =
 	
 	setsize (self, '-73 -73 -150', '73 73 120');
 	
+	if (!self.wait)
+		self.wait = HX_FRAME_TIME;
+	
 	if (self.targetname)
 	{
 		if (self.spawnflags & WATER_OFF)
-			self.use = water_start1;
+			self.use = water_start;
 		else	
-			self.use = water_stop1;
+			self.use = water_stop;
 	}
 	
 	self.th_stand ();
-	//else if (self.targetname && watcount == 1)
-	//{
-		//watcount = 0;
-		//self.use = water_start1;
-	//}
-}
-	
-void fog_float ()
-{
-	self.frame=self.weaponframe_cnt;
-	if (self.lifetime<time || self.velocity=='0 0 0')
-		remove(self);
-	else
-		thinktime self : HX_FRAME_TIME;
 }
 
-void fog_spawn ()
+void CreateFog (vector org)
 {
 entity new;
-vector org;
-	makevectors(self.angles);
-	org = (self.absmin+self.absmax)*0.5 + normalize(v_forward)*random(self.t_width) + normalize(v_right)*random(self.t_width);
 	new = spawn();
 	setorigin (new, org);
 	setmodel (new, "models/fog.spr");
@@ -455,17 +393,29 @@ vector org;
 	new.movetype = MOVETYPE_FLY;
 	new.solid = SOLID_NOT;
 	new.drawflags(+)DRF_TRANSLUCENT;
-	new.scale=0.2;
-	new.weaponframe_cnt=rint(random(0,4));
-	new.lifetime = time+self.lifespan+random(self.lifespan);
-	new.think = fog_float;
-	thinktime new : 0;
+	new.frame=rint(random(0,4));
+	new.think = SUB_Remove;
+	thinktime new : random(1.5,3.5);
 	
-	new.velocity_x = (random(-self.t_length,self.t_length));
-	new.velocity_y = (random(-self.t_length,self.t_length));
-	new.velocity_z = (random(-self.height,self.height));
+	new.velocity_x = random(-30,30);
+	new.velocity_y = random(-30,30);
+	new.velocity_z = random(-6,8);
+}
+
+void mist_spawn ()
+{;
+vector org;
+	makevectors(self.angles);
+	org = (self.absmin+self.absmax)*0.5;
+	if (random()<0.5)
+		self.lefty*=(-1);
+	org += (self.lefty * v_forward*random(self.t_width));
+	if (random()<0.5)
+		self.lefty*=(-1);
+	org += (self.lefty * v_right*random(self.t_width));
+	CreateFog(org);
 	
-	self.think = fog_spawn;
+	self.think = mist_spawn;
 	thinktime self : random(self.wait,self.wait*2);
 }
 
@@ -478,7 +428,7 @@ void() misc_mist
 	
 	self.th_stand = fog_loop1;
 	self.netname="fog";
-	self.flags (+) FL_MONSTER | FL_FLY;
+	self.flags (+) FL_FLY;
 	self.th_stand();
 	if (self.targetname)
 		self.use = SUB_Remove;
@@ -488,22 +438,19 @@ void() misc_mistgen
 {
 	precache_model ("models/fog.spr");
 	
-	if (!self.t_length)		//speed
-		self.t_length=30;
 	if (!self.t_width)		//spawning area
 		self.t_width=30;
-	if (!self.height)		//z speed
-		self.height=6;
-	if (!self.lifespan)		//fog lifetime
-		self.lifespan=2;
 	if (!self.wait)
-		self.wait=0.5;		//min delay between fog spawns
-	self.th_stand = fog_spawn;
-	self.netname="fog generator";
+		self.wait=0.25;		//min delay between fog spawns
+	self.lefty = 1;
+	
+	self.th_stand = mist_spawn;
+	self.netname = "fog generator";
+	
 	if (self.targetname)
 	{
-		if (self.spawnflags & 2)
-			self.use = fog_spawn;
+		if (self.spawnflags & MIST_STARTOFF)
+			self.use = mist_spawn;
 		else
 		{
 			self.use = SUB_Remove;
@@ -538,11 +485,11 @@ void() light_fire_large
 	precache_model ("models/flammd.spr");
 	setmodel (self, "models/flammd.spr");
 	self.think = fire_burn1;
+	if (self.targetname)
+		self.use = SUB_Remove;
 	if (!self.noise1)
 		self.noise1 = "misc/fburn_bg.wav";
 	precache_sound(self.noise1);
-	if (self.targetname)
-		self.use = SUB_Remove;
 	self.think();
 }
 
@@ -557,7 +504,7 @@ void() light_fire_large
 	
 	self.th_stand = water_fall1;
 	self.netname="river stream";
-	self.flags (+) FL_MONSTER | FL_FLY;
+	self.flags (+) FL_FLY;
 	self.th_stand();
 	
 	if (self.targetname)
@@ -579,12 +526,28 @@ void() obj_mummy =
 	self.solid = SOLID_NOT;		//use invisible breakable for collision instead of bounding box, because bounding boxes won't rotate to match his rectangular shape
 	precache_model ("models/misc_mum.mdl");
 	setmodel (self, "models/misc_mum.mdl");
-	/*setsize (self, '-10 -40 0', '10 40 12');
+	/*
+	self.solid = SOLID_BBOX;
+	setsize (self, '-10 -40 0', '10 40 12');
+	self.takedamage = DAMAGE_YES;
 	self.thingtype = THINGTYPE_BONE;
 	self.th_die = chunk_death;
 	if (!self.health)
-		self.health = 50;*/
-	self.th_stand = SUB_Null;
+		self.health = 50;
 	if (self.targetname)
 		self.use = SUB_Remove;
+	
+	if (!(self.angles_y == 0) && !(self.angles_y == 180)) // Facing north/south
+	{
+		self.orgnl_mins = self.mins;
+		self.orgnl_maxs = self.maxs;
+		
+		self.mins_x = self.orgnl_mins_y;
+		self.mins_y = self.orgnl_mins_x;
+		
+		self.maxs_x = self.orgnl_maxs_y;
+		self.maxs_y = self.orgnl_maxs_x;
+	}
+	setsize (self, self.mins, self.maxs);
+	*/
 }

@@ -4,7 +4,7 @@
 
 void sound_maker_run(void)
 {
-	sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
+	sound (self, CHAN_VOICE, self.noise1, 1, self.lip);
 }
 
 void music_player_run(void)
@@ -104,9 +104,13 @@ void sound_again(void)
 		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
 
 	self.think = sound_again;
-						 
-  
-	thinktime self : random(self.flags,self.flags2);							   
+	
+	if (self.flags==0)
+		self.flags=5;
+	if (self.flags2==0)
+		self.flags2=30;
+	
+	thinktime self : random(self.flags,self.flags2);
 }
 
 
@@ -134,6 +138,7 @@ Creates an ambient sound in the world.
 --------------------------------------------------------
 */
 
+
 void sound_ambient (void)
 {
 	if (self.soundtype == 1)
@@ -148,7 +153,6 @@ void sound_ambient (void)
 		self.flags = 5;
 		self.flags2 = 30;
 		self.think = sound_again;
-								
 	}
 	else if (self.soundtype == 3)
 	{
@@ -157,7 +161,6 @@ void sound_ambient (void)
 		self.flags = 5;
 		self.flags2 = 30;
 		self.think = sound_again;
-								
 	}
 	else if (self.soundtype == 4)
 	{
@@ -171,7 +174,6 @@ void sound_ambient (void)
 		self.flags = 5;
 		self.flags2 = 30;
 		self.think = sound_again;
-								
 	}
 	else if (self.soundtype == 6)
 	{
@@ -180,7 +182,6 @@ void sound_ambient (void)
 		self.flags = 15;
 		self.flags2 = 60;
 		self.think = sound_again;
-								 
 	}
 	else if (self.soundtype == 7)
 	{
@@ -189,7 +190,6 @@ void sound_ambient (void)
 		self.flags = 15;
 		self.flags2 = 60;
 		self.think = sound_again;
-								 
 	}
 	else if (self.soundtype == 8)
 	{
@@ -198,7 +198,6 @@ void sound_ambient (void)
 		self.flags = 15;
 		self.flags2 = 60;
 		self.think = sound_again;
-								 
 	}
 	else if (self.soundtype == 9)
 	{
@@ -265,12 +264,20 @@ void sound_ambient (void)
 		precache_sound4("ambience/gurgle.wav");
 		self.noise1 =  ("ambience/gurgle.wav");
 	}
+	
+	if (self.lip==0)
+		if (!self.think)
+			self.lip = ATTN_STATIC;
+		else
+			self.lip = ATTN_NORM;
+	else if (self.lip<1)
+		self.lip = ATTN_NONE;
 
 	if (!self.think)
-		ambientsound (self.origin, self.noise1, 1, ATTN_STATIC);
+		ambientsound (self.origin, self.noise1, 1, self.lip);
 	else
 	{
-		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
+		sound (self, CHAN_VOICE, self.noise1, 1, self.lip);
 		thinktime self : random(15,60);
 	}
 
@@ -280,6 +287,11 @@ void custom_sound_maker (void)
 {
 	precache_sound (self.netname);
 	self.noise1 = (self.netname);
+	
+	if (self.lip==0)
+		self.lip = ATTN_NORM;
+	else if (self.lip<1)
+		self.lip = ATTN_NONE;
 	
 	if (self.delay) 
 		self.use = sound_maker_wait;
@@ -293,16 +305,22 @@ void custom_sound_ambient (void)
 	self.noise1 = (self.netname);
 
 	if (self.flags) {		
-				   
-							
 		self.think = sound_again;
 		thinktime self : random(self.flags,self.flags2);
 	}
 	
+	if (self.lip==0)
+		if (!self.think)
+			self.lip = ATTN_STATIC;
+		else
+			self.lip = ATTN_NORM;
+	else if (self.lip<1)
+		self.lip = ATTN_NONE;
+	
 	if (!self.think)
-		ambientsound (self.origin, self.noise1, 1, ATTN_STATIC);
+		ambientsound (self.origin, self.noise1, 1, self.lip);
 	else
-		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
+		sound (self, CHAN_VOICE, self.noise1, 1, self.lip);
 }
 
 void custom_music_player (void)

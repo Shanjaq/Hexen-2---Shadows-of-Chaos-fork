@@ -521,7 +521,6 @@ void() fangel_deathframes =
 	if(self.health<=-40)
 	{
 		ThrowGib ("models/blood.mdl", self.health);
-		ThrowGib ("models/bloodpool.mdl", self.health);
 		ThrowGib ("models/blood.mdl", self.health);
 		chunk_death();
 		return;
@@ -855,6 +854,7 @@ void() init_fangel =
 	self.th_die = fangel_deathframes;
 	self.th_missile = fangel_handframes;
 	self.th_melee = fangel_wingframes;
+	self.th_init = monster_fallen_angel;
 	self.headmodel="models/h_fangel.mdl";
 
 	total_monsters += 1;
@@ -895,8 +895,6 @@ void() monster_fallen_angel =
 	}
 	
 	init_fangel();
-	
-	ApplyMonsterBuff(self, FALSE);
 };
 
 /*QUAKED monster_fallen_angel_lord (1 0.3 0) (-14 -14 -41) (14 14 23) AMBUSH STUCK JUMP PLAY_DEAD DORMANT

@@ -11,31 +11,6 @@ $origin 0 0 24
 $base base
 $skin badass3
 
-/*
-
-void() blood_fall1 =[ 0, blood_fall2] {bloodpool.scale = 0;};
-void() blood_fall2 =[ 0, blood_fall3] {setmodel (bloodpool, "models/blood.mdl");bloodpool.scale = .3;};
-void() blood_fall3 =[ 0, blood_fall4] {bloodpool.scale = 0.4;};
-void() blood_fall4 =[ 0, blood_fall5] {bloodpool.scale = 0.5;};
-void() blood_fall5 =[ 0, blood_fall6] {bloodpool.scale = 0.6;};
-void() blood_fall6 =[ 0, blood_fall7] {bloodpool.scale = 0.7;};
-void() blood_fall7 =[ 0, blood_fall8] {bloodpool.scale = 0.8;};
-void() blood_fall8 =[ 0, blood_fall8] {bloodpool.scale = 1.0;bloodpool.think = SUB_Remove; bloodpool.nextthink = time + 15;};
-
-void() blood_fx =
-{	
-	bloodpool = spawn ();
-	bloodpool.owner = self;
-	bloodpool.movetype = MOVETYPE_BOUNCE;
-	bloodpool.origin = self.origin + '0 0 0';
-	setsize (bloodpool, '0 5 1', '5 5 5');
-	bloodpool.think = blood_fall1;
-	bloodpool.nextthink = time + 0.01;
-	
-}
-
-*/
-
 void()	wendigo_stand1	=[	0,	wendigo_stand2	] {ai_stand();};
 void()	wendigo_stand2	=[	1,	wendigo_stand3	] {ai_stand();};
 void()	wendigo_stand3	=[	2,	wendigo_stand4	] {ai_stand();};
@@ -55,20 +30,20 @@ void()	wendigo_stand16	=[	15,	wendigo_stand17	] {ai_stand();};
 void()	wendigo_stand17	=[	16,	wendigo_stand1	] {ai_stand();};
 
 void()	wendigo_walk1	=[	17,		wendigo_walk2	] {
-if (random() < 0.2)
+if (random() < 0.05)
 	sound (self, CHAN_VOICE, "wendigo/idle.wav", 1,  ATTN_IDLE);
-ai_walk(3);};
-void()	wendigo_walk2	=[	18,		wendigo_walk3	] {ai_walk(2);};
-void()	wendigo_walk3	=[	19,		wendigo_walk4	] {ai_walk(3);};
-void()	wendigo_walk4	=[	20,		wendigo_walk5	] {ai_walk(4);};
-void()	wendigo_walk5	=[	21,		wendigo_walk6	] {ai_walk(3);};
-void()	wendigo_walk6	=[	22,		wendigo_walk7	] {ai_walk(3);};
-void()	wendigo_walk7	=[	23,		wendigo_walk8	] {ai_walk(3);};
-void()	wendigo_walk8	=[	24,		wendigo_walk9	] {ai_walk(4);};
-void()	wendigo_walk9	=[	25,		wendigo_walk10	] {ai_walk(3);};
-void()	wendigo_walk10	=[	26,	wendigo_walk11	] {ai_walk(3);};
-void()	wendigo_walk11	=[	27,	wendigo_walk12	] {ai_walk(2);};
-void()	wendigo_walk12	=[	28,	wendigo_walk11	] {ai_walk(3);};
+ai_walk(2);};
+void()	wendigo_walk2	=[	18,		wendigo_walk3	] {ai_walk(1);};
+void()	wendigo_walk3	=[	19,		wendigo_walk4	] {ai_walk(2);};
+void()	wendigo_walk4	=[	20,		wendigo_walk5	] {ai_walk(3);};
+void()	wendigo_walk5	=[	21,		wendigo_walk6	] {ai_walk(2);};
+void()	wendigo_walk6	=[	22,		wendigo_walk7	] {ai_walk(2);};
+void()	wendigo_walk7	=[	23,		wendigo_walk8	] {ai_walk(2);};
+void()	wendigo_walk8	=[	24,		wendigo_walk9	] {ai_walk(3);};
+void()	wendigo_walk9	=[	25,		wendigo_walk10	] {ai_walk(2);};
+void()	wendigo_walk10	=[	26,	wendigo_walk11	] {ai_walk(2);};
+void()	wendigo_walk11	=[	27,	wendigo_walk12	] {ai_walk(1);};
+void()	wendigo_walk12	=[	28,	wendigo_walk1	] {ai_walk(2);};
 
 
 void()	wendigo_run1	=[	17,		wendigo_run2	] {ai_run(4);};
@@ -135,7 +110,6 @@ void()	wendigo_shatter20	=[	19,	wendigo_shatter21	] {};
 void()	wendigo_shatter21	=[	20,	wendigo_shatter22	] {};
 void()	wendigo_shatter22	=[	21,	wendigo_shatter23	] {};
 void()	wendigo_shatter23	=[	22,	wendigo_shatter23	] {remove(self);};
-
 
 
 void(vector dir) FireIceSpike =
@@ -284,12 +258,8 @@ void()	wendigo_pain12	=[	68,	wendigo_run1	] {};
 
 void(entity attacker, float damage)	wendigo_pain =
 {
-	local float r;
-
 	if (self.pain_finished > time)
 		return;
-
-	r = random();
 	
 	sound (self, CHAN_VOICE, "wendigo/idle.wav", 1, ATTN_NORM);
 	wendigo_pain1 ();
@@ -327,45 +297,19 @@ void()	wendigo_die20=[	88,	wendigo_die21] {MakeSolidCorpse();};
 void()	wendigo_die21=[	89,	wendigo_die21] {};
 
 */
-//entity new;
 
 void() wendigo_die =
 {
-	/*ThrowGib ("models/shard.mdl", self.health);
-	ThrowGib ("models/shard.mdl", self.health);
-	ThrowGib ("models/shard.mdl", self.health);
-	ThrowGib ("models/shard.mdl", self.health);*/
-	//self.drawflags(+)DRF_TRANSLUCENT|MLS_CRYSTALGOLEM;
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
-	ThrowGib ("models/shardwend.mdl", self.health);
+	local float i;
+	for (i = 0; i < 19*self.scale; i++) {
+		ThrowGib ("models/shardwend.mdl", self.health);
+	}
 	ThrowGib ("models/bloodpool_ice.mdl", self.health);
-	/*ThrowGib ("models/shardice.mdl", self.health);
-	ThrowGib ("models/shardice.mdl", self.health);*/
-	//ThrowGib ("models/shard.mdl", self.health);
 	sound (self, CHAN_VOICE, "misc/icestatx.wav", 1, ATTN_NORM);
 	//setmodel (self, "models/IceDeath.mdl");
 	setmodel (self, "");
-	//self.skin = 0;
 	wendigo_shatter1();
 	return;
-
 };
 
 /*QUAKED monster_wendigo (1 0 0) (-16 -16 -24) (16 16 40) Ambush
@@ -382,7 +326,7 @@ void() monster_wendigo =
 		precache_model ("models/wendigo.mdl");
 		precache_model ("models/IceDeath.mdl");
 		precache_model ("models/proj_wend.mdl");
-
+		
 		precache_sound ("wendigo/attack.wav");
 		precache_sound ("wendigo/icehit.wav");
 		precache_sound ("wendigo/idle.wav");
@@ -402,6 +346,7 @@ void() monster_wendigo =
 	self.netname="wendigo";
 	self.flags (+) FL_MONSTER;
 	self.flags2 (+) FL_ALIVE;
+	self.proj_ofs = '0 0 38';
 	self.yaw_speed = 12;
 	
 	self.monsterclass = CLASS_GRUNT;
@@ -419,6 +364,8 @@ void() monster_wendigo =
 	self.th_missile = wendigo_atk1;
 	self.th_pain = wendigo_pain;
 	self.th_die = wendigo_die;
+	self.th_init = monster_wendigo;
 	
+	self.buff=1;
 	walkmonster_start ();
 };

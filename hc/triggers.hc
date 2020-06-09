@@ -30,7 +30,7 @@ float SPAWNFLAG_REMOVE_PP	= 16;
 float SPAWNFLAG_NO_PP		= 32;
 
 float SPAWNFLAG_ALLTOUCH	= 65536;
-float PUSH_SHEEP			= 64;
+float PUSH_SHEEP			= 64;	//trigger_jump
 float JUMP_CHANGEANGLE		= 8;	//trigger_monsterjump
 
 // the wait time has passed, so set back up for another activation
@@ -73,9 +73,9 @@ void() multi_trigger =
 
 	activator = self.enemy;
 
-	if (self.experience_value)
+	if (self.experience_value && activator.flags&FL_CLIENT)
 	{
-		AwardExperience(activator,self,0);
+		AwardExperience(activator,self,self.experience_value);	//ws: changes to self.experience_value from 0 (?)
 	}
 
 	self.check_ok=TRUE;
@@ -967,6 +967,7 @@ void() play_teleport =
 
 void(vector org) spawn_tfog =
 {
+	entity s;
 	s = spawn ();
 	s.origin = org;
 	thinktime s : 0.05;
@@ -2103,163 +2104,3 @@ void trigger_message_transfer ()
 	self.use=trigger_message_transfer_use;
 }
 
-void reflect_touch ()
-{
-	if (self.inactive || !IsMissile(other) || (other.safe_time && other.safe_time>time))	//IsMissile is in ai.hc
-		return;		//use safe_time to check if missile was already just reflected, or else it can get stuck in back & forth loop
-	
-	/*if (self.movedir != '0 0 0')
-	{
-		makevectors (other.angles);
-		if (v_forward * self.movedir < 0)
-			return;		// not facing the right way
-	}*/
-	if (other.classname=="tornato"||other.classname=="funnal"||other.classname=="chain_head")
-		return;		//don't know how to handle these yet
-	other.velocity *= (-self.speed);
-	makevectors(other.velocity);
-	other.velocity += (v_up*random(-60,60) + v_right*random(-60,60));
-	other.angles = vectoangles(other.velocity);
-	if(other.movedir) {
-		other.movedir=other.angles;
-		other.movedir=normalize(other.velocity);
-	}
-	if(other.o_angle)
-		other.o_angle=other.angles;
-	//if (other.classname=="pincer")		//Set Staff un-tomed missile does stuff with movedir
-	//	other.movedir=other.velocity/other.speed;
-	
-	other.owner = other.controller = self.goalentity;
-	if (other.owner && other.enemy)
-		other.enemy = other.owner;
-	else if (other.controller && other.enemy)
-		other.enemy = other.controller;
-	else if (other.enemy)
-		other.enemy = world;
-	other.safe_time = time+1;
-	if (other.effects & EF_NODRAW && other.touch==bone_shard_touch)		//don't know why bone shards become invisible, but they do
-		other.effects (-) EF_NODRAW;
-	
-	CreateBlueFlash(other.origin);
-	if (self.pain_finished <= time)
-	{
-		setorigin (self.goalentity, other.origin);
-		sound (self.goalentity, CHAN_AUTO, "raven/blast.wav", 1, ATTN_NORM);
-		self.pain_finished = time+0.3;
-	}
-}
-
-void reflect_remove ()
-{
-	remove(self.goalentity);
-	remove(self);
-}
-
-/*	trigger_reflect
-Brush entity that reflects any missiles that hit it, with a slight random adjustment in angle. Can be used in conjunction with func_wall to block movement and un-reflectable attacks like lightning beams.
-Don't killtarget this entity - just target it to remove it.
-Speed: Modifier to missile's original speed. Less than 1 is recommended so the player has a better chance of dodging reflected missiles.
-Spawnflags: Deactivated (8) to start deactivated and activate when used. Targetting it after this will remove it like normal.
-Issues: Behaves oddly with thrown Warhammer; doesn't account for Tornado
-*/
-
-void trigger_reflect ()
-{
-	InitTrigger();
-	self.touch=reflect_touch;
-	self.use=reflect_remove;
-	
-	if (!self.speed)
-		self.speed = 1;
-	else
-		self.speed = fabs(self.speed);
-	
-	entity reflector;
-	reflector = spawn();
-	setorigin (reflector, ((self.mins + self.maxs) * 0.5));
-	self.goalentity = reflector;	//ws: set missile owner as dummy entity, because setting it to world doesn't work out at all
-	self.pain_finished = time;		//delay between making reflection noise
-}
-
-/*	trigger_kill
-Kills anything it targets. Can use most normal trigger fields & spawnflags.
-
-th_die = Set this if you want the object to have a specific death, defaults to SUB_Remove.
-
-If it is SUB_Remove, it will execute the th_die of the object, if it has one.
-If the object doesn't have a th_die, but it has health, it will execute chunk_death.
-If it doesn't have health, it will just be removed.
-*/
-
-void trigger_kill (void)
-{	//functionality handled in SUB_UseTargets (subs.hc)
-	trigger_once();
-}
-
-/*======================================================================
- Player ladder (originally from Rubicon2 codebase by JohnFitz)
- - This is a very simple system, jump to attach to the ladder brush
- - move up down via jumpping (hook in preplayer code)
- - Added multiple climbing sounds (works with player footsound state)
- - Modified to have on/off/toggle state via triggers
- - Downsides to system, there is no abilty to go down a ladder
-
-/*======================================================================
-/*QUAKED trigger_ladder (.5 .5 .5) x x x Deactivated
-Invisible brush based ladder (jump key to climb)
--------- KEYS --------
-targetname : trigger entity
-angle    : direction player must be facing to climb ladder (required)
-count  : time between climb sound (def = depends on sound type)
-speed    : velocity speed to climb ladder (def=160)
-sounds   : whether to use rope sound or not
--------- SPAWNFLAGS --------
-Deactivated : Starts off and waits for trigger
--------- NOTES --------
-Invisible brush based ladder (jump key to climb)
-This entity cannot be damaged and is always touchable once activated
-
-======================================================================*/
-
-void trigger_ladder_touch (void)
-{
-	if (self.inactive) return;
-	if (!activator.flags&FL_CLIENT)	return;
-	if (!activator.health) return;
-	if (activator.waterlevel > 1) return;
-	if (activator.flags&FL_WATERJUMP) return;
-	if (activator.flags2&FL_CHAINED) return;
-	
-	if (self.movedir != '0 0 0')
-	{
-		makevectors (other.angles);
-		if (v_forward * self.movedir < 0)
-			return;		// not facing the right way
-	}
-	
-	activator.onladder = TRUE;
-	activator.ladder = self;
-}
-
-void trigger_ladder (void)
-{
-	if (!self.speed)
-		self.speed = 160;
-	if (self.soundtype) {		// Old Rope
-		if(!self.count)
-			self.count = 0.7;
-		
-		self.noise1 = "player/ladrope1.wav";
-		self.noise2 = "player/ladrope2.wav";
-		self.noise3 = "player/ladrope3.wav";
-		self.noise4 = "player/ladrope4.wav";
-		
-		precache_sound(self.noise1);
-		precache_sound(self.noise2);
-		precache_sound(self.noise3);
-		precache_sound(self.noise4);
-	}
-	self.touch = trigger_ladder_touch;
-	
-	InitTrigger();
-}

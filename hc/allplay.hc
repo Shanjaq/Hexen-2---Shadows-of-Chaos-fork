@@ -282,44 +282,35 @@ float fade;
 	}
 	else if (new.model == "models/footsoldierhd.mdl" || new.model == "models/footsoldierhalf.mdl" || new.model == "models/footsoldieraxe.mdl")
 	{
-		new.avelocity = 0;
 		new.avelocity_x = 20;
 		new.avelocity_y = -70;
 		new.avelocity_z = 10;
-		//new.avelocity_z = random(600);
 		new.scale=.8;
 	}
-	else if (new.model == "models/ZombiePal_hd.mdl" || new.model == "models/archerhd.mdl" || new.model == "models/muhead.mdl" || new.model == "models/afritwing.mdl" || new.model == "models/h_imp.mdl")
+	else if (new.model == "models/ZombiePal_hd.mdl" || new.model == "models/archerhd.mdl" || new.model == "models/muhead.mdl" || new.model == "models/h_imp.mdl")
 	{
-		new.avelocity = 0;
 		new.avelocity_x = 20;
 		new.avelocity_y = -70;
 		new.avelocity_z = 10;
-		//new.avelocity_z = random(600);
+		new.angles_y = random(0,360);
 		new.scale=1.13;
-		if (self.classname == "monster_archer_lord")
+		if (self.classname == "monster_archer_lord" || self.classname == "monster_imp_ice")
 			new.skin = 1;
 	}
-	else if (new.model == "models/impwing.mdl" || new.model == "models/impwing_ice.mdl")
+	else if (new.model == "models/impwing.mdl" || new.model == "models/afritwing.mdl" || new.model == "models/impwing_ice.mdl")
 	{
-		new.avelocity = 0;
-		new.avelocity_x = 20;
-		new.avelocity_y = -70;
-		new.avelocity_z = 10;
-		//new.avelocity_z = random(600);
+		new.avelocity_x = random(20);
+		new.avelocity_y = random(-70);
+		new.avelocity_z = random(10);
+		new.angles_y = random(0,360);
 		new.scale=1.13;
-		if (self.classname == "monster_imp_ice")
-			new.skin = 1;
-		else
-			new.skin = 0;
 	}
 	else if (new.model == "models/archerleg.mdl" || new.model == "models/footsoldierleg.mdl" || new.model == "models/footsoldierarm.mdl")
 	{
-		new.avelocity = 0;
 		new.avelocity_x = 3;
 		new.avelocity_y = 100;
 		new.avelocity_z = 80;
-		//new.avelocity_z = random(600);
+		new.angles_y = random(0,360);
 		new.scale=.9;
 	}
 	else if (new.model == "models/blood.mdl")
@@ -331,31 +322,14 @@ float fade;
 		new.scale = random(.6, 1.2);
 		new.frame = 0;
 	}
-	else if (new.model == "models/bloodpool.mdl" || new.model == "models/bloodpool2.mdl" || new.model == "models/bloodpool3.mdl" || new.model == "models/bloodpool_ice.mdl")
+	else if (new.model == "models/bloodpool_ice.mdl")
 	{
 		new.avelocity = 0;
 		new.gravity = 17;
 		
-		if (new.model != "models/bloodpool_ice.mdl")
-		{
-			new.classname = "bloodsplat";
-			new.solid = SOLID_TRIGGER;
-			new.touch = blood_step;
-			setsize(new,'-24 -24 0','24 24 12');
-		}
-		else
-			setsize(new, '0 0 0' , '0 0 0');
+		new.drawflags (+) DRF_TRANSLUCENT;
+		new.scale = random(0.3,0.7);
 		
-		if (self.netname == "spider")
-		{
-			setmodel (new, "models/bloodpool_green.mdl");
-			new.scale = 0.5;
-		}
-		if (new.model == "models/bloodpool_ice.mdl")
-		{
-			new.drawflags (+) DRF_TRANSLUCENT;
-			new.scale = random(0.3,0.7);
-		}
 		if (self.netname == "yakman")
 			new.scale = 1.3;
 		else if (self.netname == "maulotaur")
@@ -488,7 +462,7 @@ void GibPlayer ()
 	//ThrowGib ("models/flesh1.mdl", self.health);
 	ThrowGib ("models/flesh2.mdl", self.health);
 	ThrowGib ("models/flesh3.mdl", self.health);
-	BloodSplat();
+	BloodSplat(rint(random(0,2)));
 
 	self.deadflag = DEAD_DEAD;
 

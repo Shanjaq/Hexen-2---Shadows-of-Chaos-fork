@@ -1496,7 +1496,8 @@ void() monster_werejaguar =
       remove(self);
       return;
    }
-
+	if (!self.th_init)
+		self.th_init = monster_werejaguar;
 	if (!self.flags2&FL_SUMMONED && !self.flags2&FL2_RESPAWN)
 		precache_werejaguar();
 	
@@ -1541,10 +1542,9 @@ void() monster_werejaguar =
 	setsize (self, '-16 -16 0', '16 16 56');
 
 	self.frame=$stand1;
-
-	walkmonster_start();
 	
-	ApplyMonsterBuff(self, TRUE);
+	self.buff=2;
+	walkmonster_start();
 };
 
 void monster_mezzoman (void)
@@ -1562,6 +1562,7 @@ My babies!!! - MG
 */
 void monster_werepanther (void)
 {
+	self.th_init = monster_werepanther;
 	monster_werejaguar();
 }
 
