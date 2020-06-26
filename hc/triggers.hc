@@ -80,7 +80,6 @@ void() multi_trigger =
 
 	self.check_ok=TRUE;
 	SUB_UseTargets();
-
 	if (self.wait > 0)
 	{
 		self.think = multi_wait;
@@ -91,6 +90,7 @@ void() multi_trigger =
 		// called while C code is looping through area links...
 		self.touch = self.think = self.use = SUB_Null;
 		self.nextthink=-1;
+		
 /*Don't want to remove- may be checked later
 		thinktime self : 0.1;
 		self.think = SUB_Remove;
@@ -224,7 +224,7 @@ void() multi_use =
 		}
 		return;
 	}
-
+	
 	self.enemy = activator;
 	multi_trigger();
 };
@@ -1110,7 +1110,11 @@ float poof_speed;
 		return;
 	}
 
-	setorigin (other, t.origin);
+   if ( (self.spawnflags & SILENT) ) {
+	setorigin ( other, t.origin + '0.00000 0.00000 -27.00000');
+   } else {
+	setorigin ( other, t.origin);
+   }
 
 	if (!self.spawnflags & SILENT)
 	{

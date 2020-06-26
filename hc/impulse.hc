@@ -738,6 +738,10 @@ void() ImpulseCommands =
 			self.handy = 1;
 		}
 	}
+	else if (self.impulse == 64)
+	{
+		dprintf("BARF100: %s\n", ((self.inv_spellmods & (fexp(fexp(2, 3), 2) * 3)) > 0.00000));
+	}
 // Peanut End of new code
 	else if (self.impulse >= 100 && self.impulse <= 115)
 	{

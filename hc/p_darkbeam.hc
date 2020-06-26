@@ -61,6 +61,11 @@ void(vector start) dark_tendrils = {
 	newmis.think = dark_tendrils_think;
 };
 
+void() darkbeam_remove = {
+	stopSound(self,CHAN_AUTO);
+	remove(self);
+};
+
 void() darkbeam_think = {
 	local entity head;
 	local vector start;
@@ -97,6 +102,7 @@ void() darkbeam_think = {
 								if (head.halted == 0)
 								{
 									head.halted = 1;
+									head.solid = SOLID_NOT;
 									head.movetype = MOVETYPE_NOCLIP;
 									head.velocity_z = -36;
 									head.drawflags (+) MLS_ABSLIGHT;
@@ -125,7 +131,7 @@ void() darkbeam_think = {
 		thinktime self : 0.10000;
 	} else {
 		sound ( self, CHAN_AUTO, "ambience/newhum1.wav", 1.00000, ATTN_NORM);
-		self.think = SUB_Remove;
+		self.think = darkbeam_remove;
 		thinktime self : 3;
 	}
 };

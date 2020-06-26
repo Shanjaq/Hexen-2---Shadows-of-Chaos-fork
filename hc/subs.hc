@@ -4,6 +4,7 @@
 
 float SPAWNFLAG_ACTIVATED	= 8;
 
+void obj_barrel_explode();
 
 void SUB_Null() {}
 
@@ -390,13 +391,23 @@ string s;
 	{
 		// create a temp object to fire at a later time
 		t = spawn();
-		//t.classname = "DelayedUse";	ws: commented out because it seems to have no usage and only causes problems
+		t.netname = "DelayedUse";
+		t.classname = self.classname;
+		t.owner = self;
 		thinktime t : self.delay;
 		t.think = DelayThink;
 		t.enemy = activator;
 		t.message = self.message;
 		t.killtarget = self.killtarget;
 		t.target = self.target;
+		t.nexttarget = self.nexttarget;
+		t.style = self.style;
+		t.mangle = self.mangle;
+		t.frags = self.frags;
+		t.use=self.use;
+		t.inactive=self.inactive;
+		if(self.check_ok)
+			t.level=TRUE;
 		return;
 	}
 
@@ -421,7 +432,28 @@ string s;
 		{
 			t = find(t, targetname, self.killtarget);
 			if(t!=world)
-				remove(t);
+				if(self.classname=="func_train")
+				{//Trains can't target things when they die, so use killtarget
+					if(t.th_die)
+					{
+						if(t.th_die==obj_barrel_explode)
+							t.think=t.use;
+						else
+							t.think=t.th_die;
+						thinktime  t : 0.01;
+						t.targetname = "";
+					}
+					else if(t.health)
+					{
+						t.think=chunk_death;
+						thinktime t : 0.01;
+						t.targetname = "";
+					}
+					else
+						remove(t);
+				}
+				else
+					remove(t);
 		}
 		while(t!=world);
 	}
@@ -439,14 +471,20 @@ string s;
 			if (!t)
 			{
 				if(self.nexttarget!=""&&self.target!=self.nexttarget)
-					self.target=self.nexttarget;
+					if(self.netname=="DelayedUse")
+						self.owner.target=self.nexttarget;
+					else
+						self.target=self.nexttarget;
 				return;
 			}
 			if(t.style>=32&&t.style!=self.style)
 			{
 				self.style=t.style;
 				if(self.classname=="breakable_brush")
+				{
 					lightstylestatic(self.style,0);
+					stopSound(self,CHAN_BODY);
+				}
 				else
 					lightstyle_change(t);
 			}
