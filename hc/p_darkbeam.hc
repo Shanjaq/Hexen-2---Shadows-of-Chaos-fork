@@ -66,6 +66,19 @@ void() darkbeam_remove = {
 	remove(self);
 };
 
+void() baddie_sink = {
+	if (time < self.splash_time)
+	{
+		if ((self.lip - self.origin_z) < (self.size_z * 0.5))
+			self.abslight = (0.75 * (((self.size_z * 0.5) - (self.lip - self.origin_z)) / (self.size_z * 0.5)));
+		
+		thinktime self : 0.1;
+		self.think = baddie_sink;
+	}
+	else
+		remove(self);
+};
+
 void() darkbeam_think = {
 	local entity head;
 	local vector start;
@@ -107,12 +120,16 @@ void() darkbeam_think = {
 									head.velocity_z = -36;
 									head.drawflags (+) MLS_ABSLIGHT;
 									head.abslight = 0.75;
+									head.splash_time = time + 3.5;
+									head.lip = head.origin_z;
+									T_Damage ( head, self, self.owner, head.health);
+									head.takedamage = DAMAGE_NO;
 									
 									if (self.owner != world)
 										AwardExperience ( self.owner, head, head.experience_value);
 									
-									thinktime head : 5;
-									head.think = SUB_Remove;
+									thinktime head : HX_FRAME_TIME;
+									head.think = baddie_sink;
 								} else {
 									if (head.abslight > 0.07500)
 										head.abslight -= 0.07500;
