@@ -13,6 +13,7 @@ float crandom()
 	return random(-1,1);
 }
 
+/*
 float fexp(float base,float exponent)
 {//MG
 float exp_count;
@@ -37,6 +38,39 @@ float exp_count;
 	}
 	return base;
 }
+*/
+float  (float base,float exponent)fexp =  {
+	local float exp_count = 0.00000;
+	local float value;
+
+	value = base;
+	exponent = rint ( exponent);
+	if ( (exponent == 0.00000) ) {
+
+		return ( 1.00000 );
+
+	}
+	if ( (exponent < 0.00000) ) {
+
+		value = (1.00000 / base);
+		exponent = fabs ( exponent);
+
+	}
+	if ( (exponent == 1.00000) ) {
+
+		return ( value );
+
+	}
+	exponent -= 1.00000;
+	while ( (exp_count < exponent) ) {
+
+		exp_count += 1.00000;
+		value = (value * base);
+
+	}
+	return ( value );
+};
+
 
 float byte_me(float mult)
 {//MG
