@@ -71,6 +71,21 @@ void() baddie_sink = {
 	{
 		if ((self.lip - self.origin_z) < (self.size_z * 0.5))
 			self.abslight = (0.75 * (((self.size_z * 0.5) - (self.lip - self.origin_z)) / (self.size_z * 0.5)));
+		else
+		{
+			if (self.state == 0)
+			{
+				self.state = 1;
+				self.cnt = random(0, 3);
+				if (self.cnt < 1)
+					sound ( self, CHAN_VOICE, "ambience/moan1.wav", 1.00000, ATTN_NORM);
+				else if (self.cnt < 2)
+					sound ( self, CHAN_VOICE, "ambience/moan2.wav", 1.00000, ATTN_NORM);
+				else if (self.cnt < 3)
+					sound ( self, CHAN_VOICE, "ambience/moan3.wav", 1.00000, ATTN_NORM);
+				
+			}
+		}
 		
 		thinktime self : 0.1;
 		self.think = baddie_sink;
@@ -122,6 +137,7 @@ void() darkbeam_think = {
 									head.abslight = 0.75;
 									head.splash_time = time + 3.5;
 									head.lip = head.origin_z;
+									head.state = 0;
 									T_Damage ( head, self, self.owner, head.health);
 									head.takedamage = DAMAGE_NO;
 									
