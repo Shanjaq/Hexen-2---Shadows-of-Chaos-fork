@@ -93,7 +93,7 @@ void() blackdeath_sink = {
 			self.catapulter.solid = SOLID_NOT;
 			self.effects = EF_DARKLIGHT;
 			self.catapulter.movetype = MOVETYPE_NOCLIP;
-			
+
 			self.state = random(0, 3);
 			if (self.state < 1)
 				sound ( self.catapulter, CHAN_VOICE, "ambience/moan1.wav", 1.00000, ATTN_NORM);
