@@ -8,6 +8,9 @@ void(vector org, vector vel, float damage,entity victim) SpawnPuff;
 
 void() UseInventoryItem;
 void() ImpulseCommands;
+void() frost_launch;
+void() spellmod_install;
+void() spellfire;
 
 //============================================================================
 
@@ -400,6 +403,97 @@ void W_SetCurrentAmmo (void)
 			break;
 		}
 	break;
+	case IT_WEAPON5:
+		self.weaponmodel="";
+		self.weaponframe = 0;
+
+		switch(self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_select();
+			break;
+		case CLASS_CRUSADER:
+			warhammer_select();
+			break;
+		case CLASS_NECROMANCER:
+			sickle_select();
+			break;
+		case CLASS_SUCCUBUS:
+			bloodrain_select();
+			break;
+		default:	//CLASS_ASSASSIN
+			punchdagger_select();
+			break;
+		}
+		break;
+	case IT_WEAPON6:
+		self.weaponmodel="";
+		self.weaponframe = 0;
+	
+		switch(self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_select();
+			break;
+		case CLASS_CRUSADER:
+			warhammer_select();
+			break;
+		case CLASS_NECROMANCER:
+			sickle_select();
+			break;
+		case CLASS_SUCCUBUS:
+			bloodrain_select();
+			break;
+		default:	//CLASS_ASSASSIN
+			punchdagger_select();
+			break;
+		}
+		break;
+	case IT_WEAPON7:
+		self.weaponmodel="";
+		self.weaponframe = 0;
+		switch(self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_select();
+			break;
+		case CLASS_CRUSADER:
+			warhammer_select();
+			break;
+		case CLASS_NECROMANCER:
+			sickle_select();
+			break;
+		case CLASS_SUCCUBUS:
+			bloodrain_select();
+			break;
+		default:	//CLASS_ASSASSIN
+			punchdagger_select();
+			break;
+		}
+	break;
+	case IT_WEAPON8:
+		self.weaponmodel="";
+		self.weaponframe = 0;
+
+		switch(self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_select();
+			break;
+		case CLASS_CRUSADER:
+			warhammer_select();
+			break;
+		case CLASS_NECROMANCER:
+			sickle_select();
+			break;
+		case CLASS_SUCCUBUS:
+			bloodrain_select();
+			break;
+		default:	//CLASS_ASSASSIN
+			punchdagger_select();
+			break;
+		}
+	break;
 	}
 
 //All players will have to do this eventually, to reset
@@ -482,6 +576,18 @@ float W_CheckNoAmmo (float check_weapon)
 			else if(self.bluemana >= 2)
 					return TRUE;
 		break;
+		case IT_WEAPON8:
+			return TRUE;
+		break;
+		case IT_WEAPON7:
+			return TRUE;
+		break;
+		case IT_WEAPON6:
+			return TRUE;
+		break;
+		case IT_WEAPON5:
+			return TRUE;
+		break;
 		}
 	break;
 	case CLASS_SUCCUBUS:
@@ -514,6 +620,18 @@ float W_CheckNoAmmo (float check_weapon)
 			else if(self.bluemana >= 3)
 					return TRUE;
 		break;
+		case IT_WEAPON8:
+			return TRUE;
+		break;
+		case IT_WEAPON7:
+			return TRUE;
+		break;
+		case IT_WEAPON6:
+			return TRUE;
+		break;
+		case IT_WEAPON5:
+			return TRUE;
+		break;
 		}
 	break;
 	case CLASS_CRUSADER:
@@ -542,7 +660,19 @@ float W_CheckNoAmmo (float check_weapon)
 			else if(self.bluemana >= 1)
 					return TRUE;
 		break;
+		case IT_WEAPON8:
+			return TRUE;
+		break;
+		case IT_WEAPON7:
+			return TRUE;
+		break;
+		case IT_WEAPON6:
+			return TRUE;
+		break;
 		}
+		case IT_WEAPON5:
+			return TRUE;
+		break;
 	break;
 	case CLASS_NECROMANCER:
 		switch (check_weapon)
@@ -574,6 +704,18 @@ float W_CheckNoAmmo (float check_weapon)
 			else if(self.bluemana >= MMIS_COST)
 					return TRUE;
 		break;
+		case IT_WEAPON8:
+			return TRUE;
+		break;
+		case IT_WEAPON7:
+			return TRUE;
+		break;
+		case IT_WEAPON6:
+			return TRUE;
+		break;
+		case IT_WEAPON5:
+			return TRUE;
+		break;
 		}
 	break;
 	case CLASS_PALADIN:
@@ -599,6 +741,18 @@ float W_CheckNoAmmo (float check_weapon)
 			}
 			else if(self.bluemana >= 2) 
 					return TRUE;*/
+			return TRUE;
+		break;
+		case IT_WEAPON8:
+			return TRUE;
+		break;
+		case IT_WEAPON7:
+			return TRUE;
+		break;
+		case IT_WEAPON6:
+			return TRUE;
+		break;
+		case IT_WEAPON5:
 			return TRUE;
 		break;
 		}
@@ -747,6 +901,86 @@ void W_Attack (float rightclick)
 		break;
 		}
 	break;
+	case IT_WEAPON5:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			pal_gauntlet_fire();
+			break;
+		case CLASS_NECROMANCER:
+			self.th_missile();
+			break;
+		case CLASS_ASSASSIN:
+			Ass_Pdgr_Fire();
+			break;
+		case CLASS_CRUSADER:
+			Cru_Wham_Fire();
+			break;
+		case CLASS_SUCCUBUS:
+			Suc_Blrn_Fire();
+			break;
+		}
+	break;
+	case IT_WEAPON6:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			pal_gauntlet_fire();
+			break;
+		case CLASS_NECROMANCER:
+			self.th_missile();
+			break;
+		case CLASS_ASSASSIN:
+			Ass_Pdgr_Fire();
+			break;
+		case CLASS_CRUSADER:
+			Cru_Wham_Fire();
+			break;
+		case CLASS_SUCCUBUS:
+			Suc_Blrn_Fire();
+			break;
+		}
+	break;
+	case IT_WEAPON7:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			pal_gauntlet_fire();
+			break;
+		case CLASS_NECROMANCER:
+			self.th_missile();
+			break;
+		case CLASS_ASSASSIN:
+			Ass_Pdgr_Fire();
+			break;
+		case CLASS_CRUSADER:
+			Cru_Wham_Fire();
+			break;
+		case CLASS_SUCCUBUS:
+			Suc_Blrn_Fire();
+			break;
+		}
+	break;
+	case IT_WEAPON8:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			pal_gauntlet_fire();
+			break;
+		case CLASS_NECROMANCER:
+			self.th_missile();
+			break;
+		case CLASS_ASSASSIN:
+			Ass_Pdgr_Fire();
+			break;
+		case CLASS_CRUSADER:
+			Cru_Wham_Fire();
+			break;
+		case CLASS_SUCCUBUS:
+			Suc_Blrn_Fire();
+			break;
+		}
+	break;
 	}
 };
 
@@ -843,6 +1077,86 @@ void W_DeselectWeapon (void)
 		break;
 		}
 	break;
+	case IT_WEAPON5:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_deselect();
+		break;
+		case CLASS_CRUSADER:
+			warhammer_deselect();
+		break;
+		case CLASS_ASSASSIN:
+			punchdagger_deselect();
+		break;
+		case CLASS_SUCCUBUS:
+			bloodrain_deselect();
+		break;
+		case CLASS_NECROMANCER:
+			sickle_deselect();
+		break;
+		}
+	break;
+	case IT_WEAPON6:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_deselect();
+		break;
+		case CLASS_CRUSADER:
+			warhammer_deselect();
+		break;
+		case CLASS_ASSASSIN:
+			punchdagger_deselect();
+		break;
+		case CLASS_SUCCUBUS:
+			bloodrain_deselect();
+		break;
+		case CLASS_NECROMANCER:
+			sickle_deselect();
+		break;
+		}
+	break;
+	case IT_WEAPON7:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_deselect();
+		break;
+		case CLASS_CRUSADER:
+			warhammer_deselect();
+		break;
+		case CLASS_ASSASSIN:
+			punchdagger_deselect();
+		break;
+		case CLASS_SUCCUBUS:
+			bloodrain_deselect();
+		break;
+		case CLASS_NECROMANCER:
+			sickle_deselect();
+		break;
+		}
+	break;
+	case IT_WEAPON8:
+		switch (self.playerclass)
+		{
+		case CLASS_PALADIN:
+			gauntlet_deselect();
+		break;
+		case CLASS_CRUSADER:
+			warhammer_deselect();
+		break;
+		case CLASS_ASSASSIN:
+			punchdagger_deselect();
+		break;
+		case CLASS_SUCCUBUS:
+			bloodrain_deselect();
+		break;
+		case CLASS_NECROMANCER:
+			sickle_deselect();
+		break;
+		}
+	break;
 	default:
 		W_SetCurrentAmmo();
 	break;
@@ -895,6 +1209,28 @@ float	it, am, fl;
 		if ((self.bluemana < 1) && (self.greenmana <1))
 			am = 1;
 	break;
+	case 5:
+		fl = IT_WEAPON5;
+	break;
+	case 6:
+		fl = IT_WEAPON6;
+	break;
+	case 7:
+		fl = IT_WEAPON7;
+	break;
+	case 8:
+		fl = IT_WEAPON8;
+	break;
+	case 9:
+		fl = IT_WEAPON1;
+	break;
+	}
+
+	if (self.sale == 1) {
+		self.choice = self.impulse;
+		//car = ftos(self.choice);
+		// sprint (self, "3\n");
+		return;
 	}
 
 	self.impulse = 0;
@@ -975,6 +1311,18 @@ void() CycleWeaponCommand =
 		case IT_WEAPON4:
 			fl = IT_WEAPON1;
 			break;
+		case IT_WEAPON5:
+			fl = IT_WEAPON6;
+			break;
+		case IT_WEAPON6:
+			fl = IT_WEAPON7;
+			break;
+		case IT_WEAPON7:
+			fl = IT_WEAPON8;
+			break;
+		case IT_WEAPON8:
+			fl = IT_WEAPON5;
+			break;
 		default: /* ouch !!?? */
 			return;/*fl = IT_WEAPON1;*/
 		    break;
@@ -1020,6 +1368,18 @@ void() CycleWeaponReverseCommand =
 		case IT_WEAPON4:
 			fl = IT_WEAPON3;
 			break;
+		case IT_WEAPON5:
+			fl = IT_WEAPON8;
+			break;
+		case IT_WEAPON6:
+			fl = IT_WEAPON5;
+			break;
+		case IT_WEAPON7:
+			fl = IT_WEAPON6;
+			break;
+		case IT_WEAPON8:
+			fl = IT_WEAPON7;
+			break;
 		default: /* ouch !!?? */
 			return;/*fl = IT_WEAPON1;*/
 		    break;
@@ -1061,13 +1421,67 @@ Called every frame so impulse events can be handled as well as possible
 void() W_WeaponFrame =
 {
 	ImpulseCommands ();
+// Peanut
+	if (self.handy == 2) {
+		if ((self.Lspell == 25) || (self.Lspell == 2)) {
+			if ((self.Lspell == 25) && (self.magic_finished < time))
+				frost_launch();
+		}
+		else
+		{
+			if (time >= (self.LfingerC - ((self.spelltop * 0.36250) * ((self.Lsupport & SUPPORT_RADIUS) > 0)))) {
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+					{
+						spellmod_install();
+						self.LfingerC = time + self.spelltop;
+					}
+					else if (!(self.Lsupport & SUPPORT_RADIUS))
+					{
+						spellfire();
+						self.LfingerC = time + self.spelltop;
+					}
+				}
+			}
+		}
+	}
+	
+	if (self.handy == 3) {
+		if ((self.Rspell == 25) || (self.Rspell == 2)) {
+			if ((self.Rspell == 25) && (self.magic_finished < time))
+				frost_launch();
+		}
+		else
+		{
+			if (time >= (self.RfingerC - ((self.spelltop * 0.36250) * ((self.Rsupport & SUPPORT_RADIUS) > 0)))) {
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+					{
+						spellmod_install();
+						self.RfingerC = time + self.spelltop;
+					}
+					else if (!(self.Rsupport & SUPPORT_RADIUS))
+					{
+						spellfire();
+						self.RfingerC = time + self.spelltop;
+					}
+				}
+			}
+		}
+
+	}
+
 	if (self.playerclass==CLASS_ASSASSIN && self.button1 && self.weapon != IT_WEAPON2 && self.whiptime < time)
 	{
 		FireChainW();
 	}
 
 	if (time < self.attack_finished)
+	{
 		return;
+	}
 
 // check for attack
 	if (self.button0)
@@ -1109,6 +1523,22 @@ void ClassChangeWeapon(void)
 			self.th_weapon=purifier_select;
 			self.weaponmodel = "models/purifier.mdl";
 		break;
+		case IT_WEAPON5:
+			self.th_weapon=gauntlet_select;
+			self.weaponmodel = "models/gauntlet.mdl";
+		break;
+		case IT_WEAPON6:
+			self.th_weapon=gauntlet_select;
+			self.weaponmodel = "models/gauntlet.mdl";
+		break;
+		case IT_WEAPON7:
+			self.th_weapon=gauntlet_select;
+			self.weaponmodel = "models/gauntlet.mdl";
+		break;
+		case IT_WEAPON8:
+			self.th_weapon=gauntlet_select;
+			self.weaponmodel = "models/gauntlet.mdl";
+		break;
 		}
 	}
 	else if (self.playerclass==CLASS_CRUSADER)
@@ -1130,6 +1560,22 @@ void ClassChangeWeapon(void)
 		case IT_WEAPON4:
 			self.th_weapon=sunstaff_select;
 			self.weaponmodel = "models/sunstaff.mdl";
+		break;
+		case IT_WEAPON5:
+			self.th_weapon=warhammer_select;
+			self.weaponmodel = "models/warhamer.mdl";
+		break;
+		case IT_WEAPON6:
+			self.th_weapon=warhammer_select;
+			self.weaponmodel = "models/warhamer.mdl";
+		break;
+		case IT_WEAPON7:
+			self.th_weapon=warhammer_select;
+			self.weaponmodel = "models/warhamer.mdl";
+		break;
+		case IT_WEAPON8:
+			self.th_weapon=warhammer_select;
+			self.weaponmodel = "models/warhamer.mdl";
 		break;
 		}
 	}
@@ -1153,6 +1599,22 @@ void ClassChangeWeapon(void)
 			self.th_weapon=ravenstaff_select;
 			self.weaponmodel = "models/ravenstf.mdl";
 		break;
+		case IT_WEAPON5:
+			self.th_weapon=sickle_select;
+			self.weaponmodel = "models/sickle.mdl";
+		break;
+		case IT_WEAPON6:
+			self.th_weapon=sickle_select;
+			self.weaponmodel = "models/sickle.mdl";
+		break;
+		case IT_WEAPON7:
+			self.th_weapon=sickle_select;
+			self.weaponmodel = "models/sickle.mdl";
+		break;
+		case IT_WEAPON8:
+			self.th_weapon=sickle_select;
+			self.weaponmodel = "models/sickle.mdl";
+		break;
 		}
 	}
 	else if (self.playerclass==CLASS_ASSASSIN)
@@ -1175,6 +1637,22 @@ void ClassChangeWeapon(void)
 			self.th_weapon=setstaff_select;
 			self.weaponmodel = "models/scarabst.mdl";
 		break;
+		case IT_WEAPON5:
+			self.th_weapon=punchdagger_select;
+			self.weaponmodel = "models/punchdgr.mdl";
+		break;
+		case IT_WEAPON6:
+			self.th_weapon=punchdagger_select;
+			self.weaponmodel = "models/punchdgr.mdl";
+		break;
+		case IT_WEAPON7:
+			self.th_weapon=punchdagger_select;
+			self.weaponmodel = "models/punchdgr.mdl";
+		break;
+		case IT_WEAPON8:
+			self.th_weapon=punchdagger_select;
+			self.weaponmodel = "models/punchdgr.mdl";
+		break;
 		}
 	}
 	else if (self.playerclass==CLASS_SUCCUBUS)
@@ -1196,6 +1674,22 @@ void ClassChangeWeapon(void)
 		case IT_WEAPON4:
 			self.th_weapon=lightning_select;
 			self.weaponmodel = "models/sucwp4.mdl";
+		break;
+		case IT_WEAPON5:
+			self.th_weapon=bloodrain_select;
+			self.weaponmodel = "models/sucwp1.mdl";
+		break;
+		case IT_WEAPON6:
+			self.th_weapon=bloodrain_select;
+			self.weaponmodel = "models/sucwp1.mdl";
+		break;
+		case IT_WEAPON7:
+			self.th_weapon=bloodrain_select;
+			self.weaponmodel = "models/sucwp1.mdl";
+		break;
+		case IT_WEAPON8:
+			self.th_weapon=bloodrain_select;
+			self.weaponmodel = "models/sucwp1.mdl";
 		break;
 		}
 	}

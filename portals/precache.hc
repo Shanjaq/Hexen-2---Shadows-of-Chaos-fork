@@ -15,6 +15,7 @@ void() W_Precache =
 	//why are these here?
 	precache_model4 ("models/ball.mdl");	//magicmis, icemace
 	precache_model ("models/star.mdl");	//lightwp, magicmis
+	Precache_Magic();
 	
 	precache_model ("gfx/puff.spr");
 	precache_model ("models/ball.mdl");
@@ -765,6 +766,10 @@ void Precache_misc (void)
 	precache_model("models/cube.mdl");
 	precache_model("models/ringft.mdl");
 	precache_model("models/glyphwir.mdl");	//Tripwire version of glyph
+	precache_model("models/ringwb.mdl");
+	precache_model("models/ringft.mdl");
+	precache_model("models/ringre.mdl");
+	precache_model("models/ringtn.mdl");
 
 	//Lambinator
 	precache_model("models/sheep.mdl");
