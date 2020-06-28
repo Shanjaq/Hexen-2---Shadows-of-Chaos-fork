@@ -49,6 +49,8 @@ void() personal_magic_shop_think = {
 				centerprint(self.enemy, "Your magic affinities are@@White:  -1@Red:    +1@Yellow: +0@Green:  +0@Blue:   -1@Black:  +1@(Magic Affinity improves the efficiency of spells)@@7: Back@8: EXIT");
 			else if (self.enemy.playerclass == CLASS_ASSASSIN)
 				centerprint(self.enemy, "Your magic affinities are@@White:  -1@Red:    +0@Yellow: +1@Green:  -1@Blue:   +1@Black:  +0@(Magic Affinity improves the efficiency of spells)@@7: Back@8: EXIT");
+			else if (self.enemy.playerclass == CLASS_SUCCUBUS)
+				centerprint(self.enemy, "Your magic affinities are@@White:  +0@Red:    +0@Yellow: +0@Green:  +0@Blue:   +0@Black:  +0@(Magic Affinity improves the efficiency of spells)@@7: Back@8: EXIT");
 		}
 		if (self.step1 == 8) {
 			self.enemy.shopping = 0;

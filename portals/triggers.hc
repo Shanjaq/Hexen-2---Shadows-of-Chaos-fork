@@ -1596,6 +1596,9 @@ void trigger_push_gone (void)
 
 void() trigger_push_touch =
 {
+	if((mapname == "peanutshop") && (self.inactive))
+		return;
+
 	if(self.spawnflags&PUSH_SHEEP && other.model=="models/sheep.mdl")
 		return;
 	if(world.spawnflags&MISSIONPACK)

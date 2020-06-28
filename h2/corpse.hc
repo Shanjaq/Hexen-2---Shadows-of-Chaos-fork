@@ -167,7 +167,7 @@ vector newmaxs;
 //value set in spawn
 	
 	//self.netname = "corpse";		//PoP
-	self.target = self.waketarget;	//fix by Shanjaq
+	self.target = string_null;	//fix by Shanjaq
     self.th_die = chunk_death;
 	if (self.skin==GLOBAL_SKIN_ASH)
 		self.th_die = shatter;
