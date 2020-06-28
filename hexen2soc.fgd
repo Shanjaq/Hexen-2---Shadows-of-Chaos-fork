@@ -94,9 +94,14 @@
 	]
 ]
 
-@baseclass = Targetname [ targetname(target_source) : "Name" ]
-@baseclass = Target [ target(target_destination) : "Target" killtarget(target_destination) : "KillTarget" ]
-
+@baseclass = Targetname [
+	targetname(target_source) : "Name"
+	targetid(integer) : "ID for trigger_random"
+]
+@baseclass = Target [
+	target(target_destination) : "Target"
+	killtarget(target_destination) : "KillTarget"
+]
 @baseclass = Angles [
 	//angles_x(integer) : "Angles X"
 	//angles_Y(integer) : "Angles Y"
@@ -156,7 +161,7 @@
 @PointClass base(Artifact) model(":models/a_mboost.mdl") = art_manaboost : "Mana Boost" []
 @PointClass base(Artifact) model(":models/a_poly.mdl") = art_polymorph : "Polymorph" []
 @PointClass base(Artifact) model(":models/a_summon.mdl") = art_summon : "Summoning" []
-@PointClass base(Artifact) model(":models/a_shboost.mdl") = art_SuperHBoost : "Super Health Boost" []
+@PointClass base(Artifact) model(":models/a_shbost.mdl") = art_SuperHBoost : "Super Health Boost" []
 @PointClass base(Artifact) = art_sword_and_crown : "Sword and Crown" []
 @PointClass base(Artifact) model(":models/a_telprt.mdl") = art_teleport : "Teleport" []
 @PointClass base(Artifact) model(":models/a_tome.mdl") = art_tomeofpower : "Tome of Power" []
@@ -395,7 +400,11 @@
 		128 : "Y axis" : 0
 	]
 	flags(integer) : "Degrees of rotation"
-	flags2(integer) : "Damage when touched"
+	flags2(choices) : "Damage when touched" : 0 =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
 	puzzle_piece_1(integer) : "Puzzle Piece 1"
 	puzzle_piece_2(integer) : "Puzzle Piece 2"
 	puzzle_piece_3(integer) : "Puzzle Piece 3"
@@ -903,25 +912,7 @@
 	]
 ]
 
-@PointClass base(Appearflags, Targetname) size(-8 -8 -20, 8 8 45) = item_spawner : "Item spawner"
-[
-	bluemana(integer) : "Blue mana"
-	greenmana(integer) : "Green mana"
-	cnt_torch(integer) : "Torch"
-	cnt_h_boost(integer) : "Quartz flask"
-	cnt_sh_boost(integer) : "Mystic urn"
-	cnt_mana_boost(integer) : "Krater of might"
-	cnt_teleport(integer) : "Chaos device"
-	cnt_tome(integer) : "Tome of power"
-	cnt_summon(integer) : "Stone of summoning"
-	cnt_invisibility(integer) : "Invisibility"
-	cnt_glyph(integer) : "Glyph of ancients"
-	cnt_haste(integer) : "Boots of speed"
-	cnt_blast(integer) : "Disc of repulsion"
-	cnt_polymorph(integer) : "Ovinimancer"
-	cnt_cubeofforce(integer) : "Force cube"
-	cnt_invincibility(integer) : "Invincibility"	
-]
+@PointClass base(Appearflags, Targetname, Spawn) size(-8 -8 -20, 8 8 45) = item_spawner : "Item spawner" []
 
 //
 // Lights!
@@ -954,18 +945,21 @@
 		0 : "Normal"
 		1 : "Soft flicker"
 		6 : "Faster flicker"
+		13 : "Soft flicker alternate"
 
 		4 : "Low falloff"
 
-		5 : "Pulse"
+		5 : "Gentle pulse"
 		2 : "Slow pulse in & out"
 		11 : "Quick pulse in & out"
+		14 : "Slow subtle pulse"
 
 		3 : "Erratic pulse & flicker A"
 		7 : "Erratic pulse & flicker B"
 		8 : "Erratic pulse & flicker C"
 		9 : "Slow blink"
 		10 : "Fluorescent flicker"
+		12 : "Slow fluorescent flicker"
 	]
 	light(integer) : "Brightness" : 300
 	wait(integer) : "Wait" : 1
@@ -992,7 +986,10 @@
 	_anglescale(integer) : "Light angle scale" :  : "Sets a scaling factor for how much influence the angle of incidence of light on a surface has on the brightness of the surface. n must be between 0.0 and 1.0. Smaller values mean less attenuation, with zero meaning that angle of incidence has no effect at all on the brightness. Default 0.5"
 ]
 
-@PointClass base(Lights) size(-8 -8 -8, 8 8 8) = light : "normal light" []
+@PointClass base(Lights) size(-8 -8 -8, 8 8 8) = light : "normal light"
+[
+	mangle(string) : "Angles of spotlight"
+]
 
 @baseclass = Lightdmg
 [
@@ -1002,8 +999,7 @@
 @PointClass base(Lights, Lightdmg) model(":models/flame1.mdl") size(-10 -10 -40, 10 10 40) = light_flame_large_yellow : "Flame large yellow"[]
 @PointClass base(Lights) model(":models/flame2.mdl") size(-10 -10 -12, 12 12 18) = light_flame_small_white : "Flame small white"[]
 @PointClass base(Lights, Lightdmg) model(":models/flame2.mdl") size(-10 -10 -12, 12 12 18) = light_flame_small_yellow : "Flame small yellow"[]
-@PointClass base(Lights, Angles) size(-8 -8 -8, 8 8 8) = light_gem : "Gem light" []
-@PointClass base(Lights) size(-8 -8 -8, 8 8 8) = light_globe : "Globe" []
+@PointClass base(Lights, Angles) model(":models/gemlight.mdl") size(-8 -8 -8, 8 8 8) = light_gem : "Gem light" []
 @PointClass base(Lights) model(":models/cflmtrch.mdl") size(-8 -8 -8, 8 8 8) = light_torch_castle : "Castle torch" []
 @PointClass base(Lights) model(":models/egtorch.mdl")  = light_torch_eqypt : "Egyptian torch" []	//yes, "eqypt" is correct...
 @PointClass base(Lights) model(":models/mflmtrch.mdl") = light_torch_meso : "Meso torch" []
@@ -1132,7 +1128,7 @@
 
 @PointClass base(monster_imp_fire) = monster_imp_lord : "Lord imp" []
 
-@PointClass base(Monster) = monster_medusa_green : "Green medusa" []
+@PointClass base(Monster) model(":models/medusa.mdl") = monster_medusa_green : "Green medusa" []
 @PointClass base(monster_medusa_green) = monster_medusa_red : "Red medusa" []
 
 @PointClass base(Monster) model(":models/mummy.mdl") size(-16 -16 0, 16 16 55) = monster_mummy : "Mummy" []
@@ -1264,7 +1260,7 @@
 	abslight(integer) : "Absolute light value"
 ]
 
-@BaseClass base(Object) model(":models/barrel.mdl") size(-13 -13 0, 13 13 36) = Barrels
+@BaseClass base(Object, Spawn) model(":models/barrel.mdl") size(-13 -13 0, 13 13 36) = Barrels
 [
 	spawnflags(Flags) =
 	[
@@ -1276,23 +1272,6 @@
 ]
 @PointClass base(Barrels) = obj_barrel : "Barrel"
 [
-	health(integer) : "Health" : 25
-	bluemana(integer) : "Blue mana"
-	greenmana(integer) : "Green mana"
-	cnt_torch(integer) : "Torch"
-	cnt_h_boost(integer) : "Quartz flask"
-	cnt_sh_boost(integer) : "Mystic urn"
-	cnt_mana_boost(integer) : "Krater of might"
-	cnt_teleport(integer) : "Chaos device"
-	cnt_tome(integer) : "Tome of power"
-	cnt_summon(integer) : "Stone of summoning"
-	cnt_invisibility(integer) : "Invisibility"
-	cnt_glyph(integer) : "Glyph of ancients"
-	cnt_haste(integer) : "Boots of speed"
-	cnt_blast(integer) : "Disc of repulsion"
-	cnt_polymorph(integer) : "Ovinimancer"
-	cnt_cubeofforce(integer) : "Force cube"
-	cnt_invincibility(integer) : "Invincibility"
 ]
 @PointClass base(Barrels) = obj_barrel_exploding : "Barrel exploding" []
 @PointClass base(Barrels) = obj_barrel_indestructible : "Barrel indestructible" []
@@ -1894,23 +1873,26 @@
 	map(string) : "Map"
 ]
 
-@SolidClass base(Appearflags, Targetname) = trigger_hurt : "Hurt brush" [
+@SolidClass base(Appearflags, Targetname, Target) = trigger_hurt : "Hurt brush
+If it has a target, it will act like a relay and hurt that target when triggered."
+[
 	spawnflags(Flags) =
 	[
-                1 : "Player only (PoP)" : 0
-                2 : "Monster only (PoP)" : 0
-                8 : "Deactivated (PoP)" : 0
+		1 : "Player only (PoP)" : 0
+		2 : "Monster only (PoP)" : 0
+		8 : "Deactivated (PoP)" : 0
 	]
-	deathtype(choices) : "Death type" =
+	deathtype(choices) : "Death message" =
 	[
 		"chopped" : "Pendulum"
 		"falling" : "Fall damage"
+		"impaled" : "Impaled"
 		"oil" : "Boiling oil"
 		"zap" : "Electrocution"
 	]
 	dmg(integer) : "Damage" : 5
-	level(integer) : "Minimum health (PoP)"
-	wait(integer) : "Delay between damage(PoP)" : 1
+	level(integer) : "Minimum health"
+	wait(integer) : "Delay between damage" : 1
 ]
 
 @PointClass base(Appearflags, Targetname, Target) size(-8 -8 -8, 8 8 8) = trigger_interval : "Interval trigger"
@@ -1952,7 +1934,6 @@
 	spawnflags(Flags) =
 	[
 		1 : "Deactivated (PoP)" : 0
-		4 : "Change monster angle to match trigger" : 0
 	]
 	speed(integer) : "Speed forward" : 200
 	height(integer) : "Speed upwards" : 200
@@ -2006,10 +1987,14 @@
 	spawnflags(Flags) =
 	[
 		1 : "Push once" : 0
+		2 : "Must jump first (PoP)" : 0
+		4 : "" : 0
+		8 : "Deactivated (PoP)" : 0
 		64 : "Ignore sheep" : 0
 	]
 	speed(integer) : "Speed of push"
 	angles(string) : "Angle of push (X Y Z)"
+	noise1(string) : "Custom sound (misc/null.wav for silence)"
 ]
 
 @PointClass base(Appearflags, Targetname, Target) = trigger_quake : "Quake"
@@ -2037,11 +2022,6 @@
 	[
 		8 : "Deactivated" : 0 : "Trigger to activate, trigger again to remove if needed"
 	]
-]
-
-@SolidClass base(Trigger, Puzzles) = trigger_kill : "Kill trigger. Kills its target, using a specific function if set, their default death function if applicable, chunk death if possible, or simple instant removal otherwise."
-[
-	th_die(string) : "Specific death function"
 ]
 
 @PointClass base(Appearflags, Targetname, Target) size(-8 -8 -8, 8 8 8) = trigger_relay : "Relay"
@@ -2198,6 +2178,12 @@
 @PointClass base(wp_weapon2) model(":models/w_l41_c1.mdl") = wp_weapon4_head : "Weapon 4 head" []
 @PointClass base(wp_weapon2) model(":models/w_l42_c1.mdl") = wp_weapon4_staff : "Weapon 4 staff" []
 
+@SolidClass base(FuncLighting,Appearflags) = func_detail : "Detail brush" []
+@SolidClass base(FuncLighting,Appearflags) = func_detail_fence : "Detail Fence brush" []
+@SolidClass base(FuncLighting,Appearflags,targetname) = func_detail_wall : "Detail Wall brush" []
+@SolidClass base(FuncLighting,Appearflags)= func_detail_illusionary : "Detail Illusionary brush" []
+@SolidClass base(FuncLighting)= func_group : "Group brush" []
+
 @PointClass base(Object) model(":models/hangskel.mdl") size(-10 -10 -5, 10 10 40) = obj_hang_corpse : "Hanging corpse, assassin and skeleton variants" [
 	spawnflags(Flags) =
 	[
@@ -2215,6 +2201,8 @@
 		2 : "Start off"
 		4 : "Translucent"
 		8 : "Fullbright" 
+		16 : "Scale horizontally"
+		32 : "Scale vertically"
 	]
 	modeltype(choices) : "Wide or skinny" : 0 =
 	[
@@ -2230,6 +2218,7 @@
 		4 : ""
 		5 : "Water (light)"
 		6 : "Water (alt)"
+		7 : "Water (alt, light)"
 	]
 	wait(integer) : "Animation speed" : 0.05
 ]
@@ -2276,15 +2265,7 @@
 @PointClass base(Appearflags, Targetname, Target) size(-10 -10 0, 10 10 12) model(":models/misc_mum.mdl") = obj_mummy : "Decorative mummy; use invisible breakable_brush's for collision"
 []
 
-@SolidClass base(FuncLighting,Appearflags) = func_detail : "Detail brush" []
-@SolidClass base(FuncLighting,Appearflags) = func_detail_fence : "Detail Fence brush" []
-@SolidClass base(FuncLighting,Appearflags,targetname) = func_detail_wall : "Detail Wall brush" []
-@SolidClass base(FuncLighting,Appearflags)= func_detail_illusionary : "Detail Illusionary brush" []
-@SolidClass base(FuncLighting)= func_group : "Group brush" [
-	_phong(integer) : "Phong"
-]
-
-@PointClass base(Appearflags, Targetname, Target) = trigger_hub_intermission : "Trigger hub intermission (PoP)"
+@PointClass base(Appearflags, Targetname, Target) = trigger_hub_intermission : "Trigger hub intermission"
 [
 	delay(integer) : "Minimum duration" : 2
 	level(integer) : "Intermission #" : 11
@@ -2296,3 +2277,25 @@
 	]
 ]
 
+@PointClass base(Appearflags, Targetname, Target) = trigger_random : "
+AKA teh penguin of d00m. When triggered, it uses an entity out of a numerical range of entities.
+The first possible target is determined by its .flags, and the last by its .flags2.
+Entities to be used are identified by their .targetid, rather than .targetname. Use integer values because decimals will be rounded.
+If there are id's missing from its range, it will automatically recalculate so that its range is full of valid entities. Check spawnflag 4 if this isn't desired. Since the process re-assigns id's, it would break any entity used by a separate trigger_random's.
+If you want entity with an id to behave like it's targetted (eg. a door not to spawn a trigger field), then give it a junk targetname such as 'null'.
+It also uses its targets/killtargets when triggered (only once if spawnflag 1 is checked).
+Will be deactivated after being used .count times if set.
+This trigger reserves the targetname 'trigger_random_target'. If you give an entity that targetname, expect bad things."
+[
+	flags(integer) : "Lowest target ID" : 0
+	flags2(integer) : "Highest target ID" : 0
+	count(integer) : "Number of uses before deactivating" : 0
+	spawnflags(flags) =
+	[
+		1 : "Only use target/killtarget once"
+		2 : "Only use any random id once"
+		4 : "Don't reorganize range if an id in range has no matching entities. Only useful if an entity is used by multiple trigger_random's."
+		8 : ""
+		16 : "After triggering random id, remove all other entities in trigger's range. Possible useage: spawning random monster or activating random trigger and removing the ones not chosen. Implies single-use."
+	]
+]
