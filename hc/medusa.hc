@@ -159,6 +159,7 @@ void()medusa_attack_right;
 void()medusa_attack_left;
 void()medusa_attack;
 void(float action)MedusaSelectDir;
+void(void)monster_medusa_red;
 
 void medusa_raise()
 {

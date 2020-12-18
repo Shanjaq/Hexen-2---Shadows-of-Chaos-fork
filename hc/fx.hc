@@ -7,11 +7,6 @@ float RED_PUFF		= 1;
 float GREEN_PUFF	= 2;
 float GREY_PUFF		= 3;
 
-float AshColor()
-{
-	return 2+rint(random(4));
-}
-
 void CreateTeleporterBodyEffect (vector org,vector vel,float framelength)
 {
 	starteffect(CE_TELEPORTERBODY, org,vel,framelength);

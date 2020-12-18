@@ -1126,12 +1126,16 @@ float poof_speed;
 	if (!other.health&&other.size!='0 0 0')
 	{//Exclude projectiles!
 		other.origin = t.origin;
-		if(!t.spawnflags&1&&self.classname != "teleportcoin")	//In case you don't want to push them in a certain dir
+		if((!t.spawnflags&1&&self.classname != "teleportcoin") && !(self.spawnflags & SILENT))	//In case you don't want to push them in a certain dir
 			other.velocity = (v_forward * other.velocity_x) + (v_forward * other.velocity_y);
 		return;
 	}
 
-	setorigin (other, t.origin);
+   if ( (self.spawnflags & SILENT) ) {
+	setorigin ( other, t.origin + '0.00000 0.00000 -27.00000');
+   } else {
+	setorigin ( other, t.origin);
+   }
 
 	if (!self.spawnflags & SILENT)
 	{
@@ -1155,7 +1159,8 @@ float poof_speed;
 		*/
 		else
 			poof_speed = 300;
-		other.velocity = v_forward * poof_speed;
+		if(mapname!="peanutshop") //prevent infinite loop between landings
+			other.velocity = v_forward * poof_speed;
 	}
 
 	other.flags(-)FL_ONGROUND;
@@ -1434,6 +1439,9 @@ void trigger_push_gone (void)
 
 void() trigger_push_touch =
 {
+	if(self.inactive)
+		return;
+
 	if(self.spawnflags&PUSH_SHEEP && other.model=="models/sheep.mdl")
 		return;
 	if (other.health > 0)

@@ -8,6 +8,9 @@ void(vector org, vector vel, float damage,entity victim) SpawnPuff;
 void() PlayerCrouch;
 void() UseInventoryItem;
 void() ImpulseCommands;
+void() frost_launch;
+void() spellmod_install;
+void() spellfire;
 
 //============================================================================
 
@@ -950,6 +953,13 @@ float	it, am, fl;
 		fl = IT_WEAPON6;
 	}
 
+	if (self.sale == 1) {
+		self.choice = self.impulse;
+		//car = ftos(self.choice);
+		// sprint (self, "3\n");
+		return;
+	}
+
 	self.impulse = 0;
 
 	if (!(self.items & fl))
@@ -1154,6 +1164,57 @@ if (self.welcomeshown <= 16)		// set endtime of welcome message here
 	}
 }*/
 	ImpulseCommands ();
+	
+// Peanut
+	if (self.handy == 2) {
+		if ((self.Lspell == 25) || (self.Lspell == 2)) {
+			if ((self.Lspell == 25) && (self.magic_finished < time))
+				frost_launch();
+		}
+		else
+		{
+			if (time >= (self.LfingerC - ((self.spelltop * 0.36250) * ((self.Lsupport & SUPPORT_RADIUS) > 0)))) {
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+					{
+						spellmod_install();
+						self.LfingerC = time + self.spelltop;
+					}
+					else if (!(self.Lsupport & SUPPORT_RADIUS))
+					{
+						spellfire();
+						self.LfingerC = time + self.spelltop;
+					}
+				}
+			}
+		}
+	}
+	
+	if (self.handy == 3) {
+		if ((self.Rspell == 25) || (self.Rspell == 2)) {
+			if ((self.Rspell == 25) && (self.magic_finished < time))
+				frost_launch();
+		}
+		else
+		{
+			if (time >= (self.RfingerC - ((self.spelltop * 0.36250) * ((self.Rsupport & SUPPORT_RADIUS) > 0)))) {
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+					{
+						spellmod_install();
+						self.RfingerC = time + self.spelltop;
+					}
+					else if (!(self.Rsupport & SUPPORT_RADIUS))
+					{
+						spellfire();
+						self.RfingerC = time + self.spelltop;
+					}
+				}
+			}
+		}
+	}
 	
 	if (self.playerclass==CLASS_ASSASSIN && self.button1 && self.weapon != IT_WEAPON2 && self.whiptime < time)
 	{
