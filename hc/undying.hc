@@ -3,7 +3,7 @@ void() check_stand;
 vector undying_mins = '-16 -16 -6';
 vector undying_maxs = '16 16 56';
 
-void undying_fixpos()
+void UnsetFromFloor()
 {	//called when they rise from fake death or real death (via resurrection). otherwise they get stuck in ground & cant move
 	setorigin (self, self.origin + '0 0 2');
 	self.movetype = MOVETYPE_TOSS;
@@ -24,7 +24,7 @@ float state;
 	if (state==AF_END) {
 		self.th_init();
 		monster_raisedebuff();
-		undying_fixpos();
+		UnsetFromFloor();
 		if (self.enemy!=world)
 			self.think=self.th_run;
 		else
@@ -85,13 +85,12 @@ void undying_standup(void) [++ 131 .. 182]
 		self.solid = SOLID_SLIDEBOX;
 		self.takedamage = DAMAGE_YES;
 		self.th_pain = self.th_save;
-		undying_fixpos();
+		UnsetFromFloor();
 	}
 	
 	if (self.frame >= 181)
 	{
-		self.movetype=MOVETYPE_STEP;
-		if (self.enemy)
+		if (EnemyIsValid(self.enemy))
 			self.think = self.th_run;
 		else
 			self.think = self.th_stand;
@@ -118,12 +117,13 @@ void undying_debug(void) [++ 0 .. 182]
 void undying_painfall(void) [++ 90 .. 130]
 {
 	if (self.frame == 130)
-		thinktime self : random(3.75,4.5-(skill*0.5));
+		thinktime self : random(4,5.5-(skill*0.5));
 	else
 		thinktime self : HX_FRAME_TIME;
 	
 	if (self.frame<=91) {
 		self.counter = TRUE;	//dont get back up again
+		self.movetype = MOVETYPE_STEP;	//dont get pushed around
 		self.takedamage = DAMAGE_NO;
 		self.th_save = self.th_pain;
 		self.th_pain = SUB_Null;
@@ -133,11 +133,12 @@ void undying_painfall(void) [++ 90 .. 130]
 	{
 		if (random(100) < 80 && !undying_headless())
 		{
+			bloodspew_create (2, 25, self.view_ofs);
 			ThrowGib(self.headmodel, self.health);
 			self.headmodel = "";
 			setmodel(self, "models/ZombiePal_nohd.mdl");
-			sound(self,CHAN_VOICE,"undying/udecap.wav",1,ATTN_NORM);
 			setsize (self, '-23 -13 -6', '23 13 6');
+			sound(self,CHAN_VOICE,"undying/udecap.wav",1,ATTN_NORM);
 		}
 		else
 			sound(self,CHAN_VOICE,"undying/udeath.wav",1,ATTN_NORM);
@@ -167,15 +168,9 @@ void undying_pain(void) [++ 90 .. 99]
 	else if (self.pain_finished>time)
 		self.th_run();
 	
-	thinktime self : HX_FRAME_TIME;
-	
-	if (self.frame == 91)
-	{
-		ThrowGib ("models/blood.mdl", self.health);
-	
-		if (random(100) < 30)
-			return;
-	}
+	ThrowGib ("models/blood.mdl", self.health);
+	if (random() < 0.3)
+		return;
 	
 	ai_pain(2);
 	self.pain_finished=time+1;
@@ -185,6 +180,8 @@ void undying_pain(void) [++ 90 .. 99]
 	
 	if(self.frame >= 99)
 		self.think = self.th_run;
+	
+	thinktime self : HX_FRAME_TIME;
 }
 
 void undying_attack(void) [++ 65 .. 88]
@@ -269,7 +266,9 @@ void()	undying_run14	=[	63,		undying_run1	] {ai_run(self.speed*2);};
 
 void() undying_gibs =
 {
-	ThrowGib ("models/ZombiePal_hd.mdl", self.health);
+	ThrowGib ("models/ZombiePal_arm.mdl", self.health);
+	ThrowGib ("models/ZombiePal_leg.mdl", self.health);
+	//ThrowGib ("models/ZombiePal_hd.mdl", self.health);
 	remove(self);
 }
 
@@ -285,11 +284,12 @@ void undying_dying(void) [++ 90 .. 130]
 		starteffect(CE_GHOST, self.origin,'0 0 10', 0.1);
 		if (random(100) < 80 && !undying_headless())
 		{
+			bloodspew_create (2, 25, self.view_ofs);
 			ThrowGib(self.headmodel, self.health);
 			self.headmodel = "";
 			setmodel(self, "models/ZombiePal_nohd.mdl");
-			sound(self,CHAN_VOICE,"undying/udecap.wav",1,ATTN_NORM);
 			setsize (self, '-23 -13 -6', '23 13 6');
+			sound(self,CHAN_VOICE,"undying/udecap.wav",1,ATTN_NORM);
 		}
 		else
 			sound(self,CHAN_VOICE,"undying/udeath.wav",1,ATTN_NORM);
@@ -354,9 +354,11 @@ void monster_undying ()
 		precache_undying();
 
 	if(!self.experience_value)
-		self.experience_value = 50;
+		self.experience_value = 40;
+	self.init_exp_val = self.experience_value;
 	if(!self.health)
 		self.health = 85;
+	self.max_health = self.health;
 
 	self.th_stand = undying_stand;
 	self.th_walk = undying_walk;
@@ -377,24 +379,22 @@ void monster_undying ()
 	
 	if (!undying_headless())
 		setmodel(self, "models/ZombiePal.mdl");
-
-	self.thingtype=THINGTYPE_FLESH;
-	
-	self.mass = 11;		//ws: increased. 10 seems to be the magic number for when they take impact damage from player running into them
 	
 	self.netname="undying";
 	self.flags (+) FL_MONSTER;
 	self.flags2 (+) FL_ALIVE;
+	self.mass = 11;		//ws: increased. 10 seems to be the magic number for when they take impact damage from player running into them
 	self.yaw_speed = 4;
+	self.thingtype=THINGTYPE_FLESH;
 	self.t_length = 80;		//custom melee range for ai_melee. default is 60
 	//self.view_ofs = '0 0 40';
 	
 	//self.hull=HULL_PLAYER;
 	self.hull = 2;
 	self.solid = SOLID_SLIDEBOX;
+	self.movetype = MOVETYPE_TOSS;
 	setsize (self, undying_mins, undying_maxs);
-
-	self.init_exp_val = self.experience_value;
 	
+	UnsetFromFloor();
 	walkmonster_start();
 }

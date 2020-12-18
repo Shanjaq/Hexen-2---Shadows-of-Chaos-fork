@@ -10,7 +10,9 @@ void (vector org, entity death_owner) spawn_tdeath;
 void() DecrementSuperHealth;
 void CheckRings (void);
 void () multiply_monsters;
+void(entity client) ResetInventory;
 
+float EXIT_RESETINV = 16;		//ws: trigger_changelevel spawnflag
 
 void FreezeAllEntities(void)
 {
@@ -351,6 +353,17 @@ void() changelevel_touch =
 		WriteByte (MSG_ALL, 5);
 		FreezeAllEntities();
 		return;
+	}
+	
+	if (!deathmatch && self.spawnflags&EXIT_RESETINV)
+	{
+		entity search;
+		search=find(world,classname,"player");
+		while(search) {
+			search.weaponmodel = "";
+			ResetInventory(search);
+			search=find(search,classname,"player");
+		}
 	}
 
 /*	if (self.spawnflags & 2)
@@ -1668,7 +1681,7 @@ void() PlayerPreThink =
 			self.velocity_z = self.ladder.speed * self.hasted;
 			if (crouching) {					//ws: if pressing crouch button, move down ladder
 				self.velocity_z *= (-1);
-				if (self.hull=HULL_CROUCH)		//ws: if in actual crouch state, return to normal once on ladder
+				if (self.hull==HULL_CROUCH)		//ws: if in actual crouch state, return to normal once on ladder
 					PlayerUnCrouching();
 			}
 			self.gravity = 0.0000001;
@@ -1703,12 +1716,8 @@ void() PlayerPreThink =
 		if (self.button2)
 			PlayerJump ();
 		else
-			self.flags = self.flags | FL_JUMPRELEASED;
+			self.flags(+)FL_JUMPRELEASED;
 	}
-	/*if (self.button2)
-		PlayerJump ();
-	else
-		self.flags(+)FL_JUMPRELEASED;*/
 
 // teleporters can force a non-moving pause time
 	if (time < self.pausetime)
@@ -2868,4 +2877,51 @@ float retval;
 	}
 	parm16=self.state;
 	return retval;
+}
+
+void ResetInventory (entity client)
+{
+	if (!client.flags&FL_CLIENT)
+		return;
+	
+	//client.items(-)IT_WEAPON4|IT_WEAPON3|IT_WEAPON4_1|IT_WEAPON4_2|IT_WEAPON2;
+	client.items = IT_WEAPON1;
+	client.bluemana = client.greenmana = 0;
+	
+	client.rings = 0;
+	client.rings_active = 0;
+	client.ring_flight =
+	client.ring_water =
+	client.ring_turning =
+	client.ring_regeneration = 0;
+	
+	client.cnt_torch =
+	client.cnt_h_boost =
+	client.cnt_sh_boost =
+	client.cnt_mana_boost =
+	client.cnt_teleport =
+	client.cnt_tome =
+	client.cnt_summon =
+	client.cnt_invisibility =
+	client.cnt_glyph =
+	client.cnt_haste =
+	client.cnt_blast =
+	client.cnt_polymorph =
+	client.cnt_flight =
+	client.cnt_cubeofforce =
+	client.cnt_invincibility = 0;
+	
+	client.armor_amulet =
+	client.armor_breastplate =
+	client.armor_bracer =
+	client.armor_helmet = 0;
+	
+	client.puzzle_inv1 =
+	client.puzzle_inv2 =
+	client.puzzle_inv3 =
+	client.puzzle_inv4 =
+	client.puzzle_inv5 =
+	client.puzzle_inv6 =
+	client.puzzle_inv7 =
+	client.puzzle_inv8 = string_null;
 }

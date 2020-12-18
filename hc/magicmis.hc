@@ -62,7 +62,7 @@ $frame select6      select7
 
 float MMIS_COST = 2;
 float MMIS_TOME_COST = 8;
-float MMIS_SHOCK_COST = 1;
+float MMIS_SHOCK_COST = 0.5;
 float MMIS_SHOCK_ANGLE = 37;
 
 void chain_remove ()
@@ -162,6 +162,15 @@ void FireMagicMissile (float offset, float seeking)
 	
 	if (seeking)
 	{
+		newmis.effects=EF_DIMLIGHT;
+		newmis.frags=TRUE;
+		newmis.hoverz=TRUE;
+		newmis.turn_time=2;
+		newmis.lifetime=time+5;
+		newmis.th_die=chain_remove;
+		newmis.think=HomeThink;
+		thinktime newmis : 0.2;
+			
 		if(self.classname=="monster_eidolon")
 		{
 			newmis.scale=0.75;
@@ -170,17 +179,19 @@ void FireMagicMissile (float offset, float seeking)
 			
 			newmis.enemy=self.enemy;
 			newmis.classname = "eidolon spell";
+			newmis.homerate = 0.1;
 			newmis.turn_time=3;
 			newmis.dmg=random(30,40);
 		}
 		else
-		{
-			setorigin(newmis,self.origin+self.proj_ofs+v_forward*8+v_right*7+'0 0 5');
-			sound(newmis,CHAN_AUTO,"necro/mmfire.wav",1,ATTN_NORM);
+		{	//ws: changed so magic missile fire rate is the same across levels but homing improves
+			newmis.homerate=0.16-(self.level*0.01);
+			if (newmis.homerate<0.01)
+				newmis.homerate=0.01;
 			
 			if (tome)
 			{
-				newmis.dmg = random(40, 50) + wismod;
+				newmis.dmg=random(45,60);		//newmis.dmg = random(40, 50) + wismod;
 				newmis.scale=1.5;
 				newmis.veer = 110 - intmod;
 				if (newmis.veer < 30)
@@ -188,24 +199,15 @@ void FireMagicMissile (float offset, float seeking)
 			}
 			else
 			{
-				newmis.dmg = random(15, 20) + (wismod * 0.5);
+				newmis.dmg = random(22,28);		//newmis.dmg = random(18, 24) + (wismod * 0.5);
 				newmis.scale=1;
-				int veeramt = 60 - intmod;
-				if (veeramt > 15)
-					newmis.veer=veeramt;
-				else
-					newmis.veer=15;
+				newmis.veer = 50 - intmod;
+				if (newmis.veer < 10)
+					newmis.veer = 10;
 			}
 			
-			newmis.effects=EF_DIMLIGHT;
-			newmis.frags=TRUE;
-			newmis.homerate=0.1;
-			newmis.turn_time=2;
-			newmis.lifetime=time+5;
-			newmis.th_die=chain_remove;
-			newmis.think=HomeThink;
-			newmis.hoverz=TRUE;
-			thinktime newmis : 0.2;
+			setorigin(newmis,self.origin+self.proj_ofs+v_forward*8+v_right*7+'0 0 5');
+			sound(newmis,CHAN_AUTO,"necro/mmfire.wav",1,ATTN_NORM);
 		}
 	}
 	else
@@ -316,9 +318,7 @@ float FireShockingGrasp (float intmod, float damg)
 				forwardDiff = normalize(v_forward) * radius;
 				shockangle = AngleBetween(diff, forwardDiff);
 				
-				dprint("Shock angle: ");
-				dprint(ftos(shockangle));
-				dprint("\n");
+				dprint("Shock angle: "); dprint(ftos(shockangle)); dprint("\n");
 				
 				if (shockangle < MMIS_SHOCK_ANGLE)
 				{
@@ -482,7 +482,7 @@ void() launch_bloodparent =
 
 */
 
-void  mmis_power()	//buffed, because it should make up for the short range with power (otherwise theres no incentive not to use regular missiles) -ws
+void  mmis_power()	//ws: buffed, because it should make up for short range with power (otherwise theres no incentive not to use regular missiles)
 {
 	float wismod, intmod, damg, shocksuccess, tome;
 	
@@ -503,15 +503,22 @@ void  mmis_power()	//buffed, because it should make up for the short range with 
 	if (shocksuccess)
 	{
 		sound(self,CHAN_AUTO,"necro/attack1.wav",1,ATTN_NORM);
-		if (self.health < 60)
+		if (self.bluemana>=MMIS_SHOCK_COST)
 		{
-			self.health = self.health + intmod * 0.05;
 			self.bluemana-=MMIS_SHOCK_COST;
-		}
-		else if (tome)
-		{
-			self.health = self.health + intmod * 0.18;
-			self.bluemana-=3;
+			if (tome && self.bluemana>=MMIS_SHOCK_COST*2)
+			{
+				if (self.health<self.max_health) {	//dont negate Mystic Urn bonus
+					self.health += intmod * 0.18;
+					if (self.health>self.max_health)
+						self.health = self.max_health;
+				}
+				self.bluemana-=MMIS_SHOCK_COST*2;
+			}
+			else if (self.health < 60)
+			{
+				self.health = self.health + intmod * 0.05;
+			}
 		}
 	}
 	
@@ -521,7 +528,7 @@ void  mmis_power()	//buffed, because it should make up for the short range with 
 /*
 void  mmis_power()
 {
-	float wismod, intmod, damg, shocksuccess, tome;
+	float wismod, intmod, damg, tome;
 	
 	if(self.attack_finished>time)
 		return;
@@ -535,7 +542,6 @@ void  mmis_power()
 		damg *= 2;
 	
 	//FireFlash();
-	//shocksuccess = FireShockingGrasp(intmod, damg);
 	launch_bloodparent(35);
 	launch_bloodparent(0);
 	launch_bloodparent(-35);
@@ -543,11 +549,6 @@ void  mmis_power()
 	sound(self,CHAN_AUTO,"fangel/deflect.wav",1,ATTN_NORM);
 
 		self.bluemana-=MMIS_SHOCK_COST;
-	
-	//if (shocksuccess)
-	//{
-		
-	//}
 	
 	self.attack_finished=time+0.4;
 }
@@ -575,24 +576,10 @@ void  mmis_normal()
 	}
 	
 	self.bluemana-=cost;
-	self.attack_finished = time+(0.625 - self.level*0.025);
+	self.attack_finished = time+0.3;
+	/*self.attack_finished = time+(0.625 - self.level*0.025);
 	if (self.attack_finished<time+0.2)	//vanilla magic missile delay
-		self.attack_finished = time+0.2;
-	
-	/*if (self.level < 2)		//ws: bloodshot's method
-		self.attack_finished=time+0.6;
-	else if (self.level < 3)
-		self.attack_finished=time+0.55;
-	else if (self.level < 5)
-		self.attack_finished=time+0.5;
-		else if (self.level < 7)
-		self.attack_finished=time+0.45;
-	else if (self.level < 9)
-		self.attack_finished=time+0.4;
-		else if (self.level < 10)
-		self.attack_finished=time+0.35;
-	else
-		self.attack_finished=time+0.3;*/
+		self.attack_finished = time+0.2;*/
 }
 
 
@@ -618,17 +605,17 @@ void magicmis_shock_fire (void)
 	
 	tome = self.artifact_active&ART_TOMEOFPOWER;
 	
-	if(self.button0&&self.weaponframe==$mfire5 &&!self.artifact_active&ART_TOMEOFPOWER)
+	if(self.button1&&self.weaponframe==$mfire5 &&!self.artifact_active&ART_TOMEOFPOWER)
 		self.weaponframe=$mfire5;
 	else
 		self.wfs = advanceweaponframe($mfire1,$mfire8);
 	self.th_weapon=magicmis_shock_fire;
 	self.last_attack=time;
 
-	cost = MMIS_COST;
+	cost = MMIS_SHOCK_COST;
 	if (tome)
 	{
-		cost = MMIS_TOME_COST;
+		cost += MMIS_SHOCK_COST*2;
 	}
 	
 	if(self.wfs==WF_CYCLE_WRAPPED||self.bluemana<cost)

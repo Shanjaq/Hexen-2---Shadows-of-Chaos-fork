@@ -746,7 +746,6 @@ void end_sys_fields;
 .entity shield;
 .float frozen;		//Can't be a flag, is a counter
 .float oldskin;
-.void() oldthink;
 .void() th_weapon;
 .float decap;		//To know if was beheaded, not a flag, set to 2 if
 					//head should explode
@@ -794,7 +793,7 @@ void end_sys_fields;
 .float check_ok;			//For trigger check, instead of re-using aflag
 .entity check_chain;		//for trigger_check, keeps track of it's targetted entities
 
-.void() th_spawn;			//Monster function you spawned with
+//.void() th_spawn;			//Monster function you spawned with		//only utilized by unused sheep function, now commented out
 .float freeze_time;
 .float level_frags;
 .float visibility;
@@ -835,7 +834,11 @@ entity	sight_entity;	//So monsters wake up other monsters
 .string waketarget;		//monsters use self.waketarget upon sighting player
 .string sightsound;
 .float jumpframe;		//frame monsters use while in air due to disc of repulsion or trigger_monsterjump
-.void() th_raise;		//monster revival system
+.void() th_raise;		//monster resurrection system
+.float targetid;		//numerical id for trigger_random
+.string messagestr		//string version of message
+.string msg2str;		//string version of msg2
+.string no_puzzle_str	//string version of no_puzzle_msg
 
 .float onladder;		//rubicon 2 / arcane dimensions ladder system
 .entity ladder;

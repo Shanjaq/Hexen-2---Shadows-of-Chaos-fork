@@ -25,8 +25,6 @@ Door.enemy chains from the master door through all doors linked in the chain.
 void door_hit_bottom();
 void door_hit_top();
 
-
-
 /*
 ===========================================================================
 door_slide
@@ -178,8 +176,22 @@ void door_go_down();
 void door_go_up();
 
 void door_damage()
-{
-	T_Damage (other, self, self, self.dmg);
+{	//ws: expanded to be consistent with door_blocked and not damage when inactive
+	//T_Damage (other, self, self, self.dmg);
+	if (self.velocity=='0 0 0'&&self.avelocity=='0 0 0')
+		return;
+	if(self.dmg==666)
+	{
+		if(other.classname=="player"&&other.flags2&FL_ALIVE)
+		{
+			other.decap=TRUE;
+			T_Damage (other, self, self, other.health+300);
+		}
+		else
+			T_Damage (other, self, self, other.health+50);
+	}
+	else
+		T_Damage (other, self, self, self.dmg);
 }
 
 void door_blocked()
@@ -362,11 +374,17 @@ void door_fire()
 	if (self.owner != self)
 		objerror ("door_fire: self.owner != self");
 
-	self.no_puzzle_msg = 0;
+	if (self.no_puzzle_msg)
+		self.no_puzzle_msg = 0;
+	if (self.no_puzzle_str!="")
+		self.no_puzzle_str = "";	//SoC
 
 // play use key sound
 
-	self.message = 0;		// no more message
+	if (self.message)
+		self.message = 0;		// no more message
+	if (self.messagestr!="")
+		self.messagestr = "";
 	oself = self;
 
 	if (self.spawnflags & DOOR_TOGGLE)
@@ -412,6 +430,9 @@ void door_use()
 	self.message = 0;			// door messages are for touch only
 	self.owner.message = 0;
 	self.enemy.message = 0;
+	self.messagestr="";	//SoC
+	self.owner.messagestr="";
+	self.enemy.messagestr="";
 	oself = self;
 	self = self.owner;
 	door_fire ();
@@ -457,9 +478,12 @@ void door_trigger_touch()
 
 		if (!check_puzzle_pieces(other,removepp,inversepp))
 		{
-			if (self.no_puzzle_msg && !deathmatch) 
+			if ((self.no_puzzle_msg || self.no_puzzle_str!="") && !deathmatch) 
 			{
-				temp = getstring(self.no_puzzle_msg);
+				if (self.no_puzzle_str!="")
+					temp = self.no_puzzle_str;
+				else
+					temp = getstring(self.no_puzzle_msg);
 				centerprint (other, temp);
 				door.attack_finished = time + 2;
 			}
@@ -514,15 +538,18 @@ void door_touch()
 		else
 			T_Damage (other, self, self, other.health+50);
 	}
-
+	
 	if(self.owner.attack_finished > time)
 		return;
 
 	self.owner.attack_finished = time + 2;
 
-	if(self.owner.message != 0 && other.flags&FL_CLIENT && !deathmatch)
+	if((self.owner.message || self.owner.messagestr!="") && other.flags&FL_CLIENT && !deathmatch)
 	{
-		temp = getstring(self.owner.message);
+		if (self.owner.messagestr != "")			//SoC: triggers can use messagestr for raw string instead of using an index for strings.txt
+			temp = self.owner.messagestr;
+		else
+			temp = getstring(self.owner.message);
 		centerprint (other, temp);
 		sound (other, CHAN_VOICE, "misc/comm.wav", 1, ATTN_NORM);
 	}
@@ -539,9 +566,12 @@ void door_touch()
 
 	if (!check_puzzle_pieces(other,removepp,inversepp))
 	{
-		if (self.no_puzzle_msg && !deathmatch)
+		if ((self.no_puzzle_msg || self.no_puzzle_str!="") && !deathmatch)
 		{
-			temp = getstring(self.no_puzzle_msg);
+			if (self.no_puzzle_str!="")
+				temp = self.no_puzzle_str;
+			else
+				temp = getstring(self.no_puzzle_msg);
 			centerprint (other, temp);
 		}
 		return;
@@ -668,6 +698,7 @@ void LinkDoors()
 			starte.targetname = self.targetname;
 		if (self.message != 0)
 			starte.message = self.message;
+		if (self.messagestr!="")
 
 		t = find (t, classname, self.classname);	
 		if (!t)
@@ -822,7 +853,7 @@ void door_sounds(void)
 		self.noise2 = "doors/penswing.wav";
 		self.noise4 = "doors/penstart.wav";
 	}
-	else if (self.soundtype == 10)	// Pully
+	else if (self.soundtype == 10)	// Pully plat
 	{
 		precache_sound ("plats/pulyplt1.wav");
 		precache_sound ("plats/pulyplt2.wav");
@@ -831,7 +862,7 @@ void door_sounds(void)
 		self.noise2 = "plats/pulyplt1.wav";
 		self.noise4 = "plats/pulyplt1.wav";
 	}
-	else if (self.soundtype == 11)	// Chain
+	else if (self.soundtype == 11)	// Chain plat
 	{
 		precache_sound ("plats/chainplt1.wav");
 		precache_sound ("plats/chainplt2.wav");
@@ -849,6 +880,15 @@ void door_sounds(void)
 		self.noise1 = "fx/boldstop.wav";
 		self.noise2 = "doors/penswing.wav";
 		self.noise4 = "misc/null.wav";
+	}
+	else if (self.soundtype == 13)	// Stone plat
+	{
+		precache_sound ("plats/platslid.wav");
+		precache_sound ("plats/platstp.wav");
+		
+		self.noise1 = "plats/platstp.wav";
+		self.noise2 = "plats/platslid.wav";
+		self.noise4 = "plats/platslid.wav";
 	}
 }
 
@@ -1190,6 +1230,7 @@ void fd_secret_use()
 		return;
 
 	self.message = 0;		// no more message
+	self.messagestr = "";
 
 	SUB_UseTargets();				// fire all targets / killtargets
 
@@ -1322,9 +1363,12 @@ void secret_touch()
 
 	self.attack_finished = time + 2;
 	
-	if (self.message)
+	if (self.message || self.messagestr!="")
 	{
-		s = getstring(self.message);
+		if (self.messagestr != "")			//SoC: triggers can use messagestr for raw string instead of using an index for strings.txt
+			s = self.messagestr;
+		else
+			s = getstring(self.message);
 		centerprint (other, s);
 		sound (other, CHAN_BODY, "misc/comm.wav", 1, ATTN_NORM);
 	}

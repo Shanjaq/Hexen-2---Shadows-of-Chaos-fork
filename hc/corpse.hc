@@ -30,7 +30,7 @@ void wandering_monster_respawn()
 		}
 		//just in case
 		if (trace_fraction == 1) {
-			self.origin_z += 10;
+			setorigin(self, self.origin+'0 0 10');
 			droptofloor();
 			if (!walkmove(0,0, FALSE))
 				trace_fraction = 0;
@@ -50,21 +50,17 @@ void wandering_monster_respawn()
 	
 	//spot is clear, use spot
 	dprint("Respawning monster ready to spawn\n");
-	self.origin = spot1 + '0 0 10';	//avoid spawning inhibited by floor
+	setorigin(self, self.origin+'0 0 10');	//avoid spawning inhibited by floor
 	
 	self.think = self.th_init;
-	self.nextthink = time + 0.01;
+	self.nextthink = time + HX_FRAME_TIME;
 	
 	CreateRedCloud (spot1 + '0 0 40','0 0 0',HX_FRAME_TIME);
 }
 
-float WANDERING_MONSTER_TIME_MIN = 120; //2 minutes
-float WANDERING_MONSTER_TIME_MAX = 666; //11 minutes
-
 void MarkForRespawn (void)
 {
 	entity newmis;
-	float timelimit;
 	
 	if (CheckCfgParm(PARM_RESPAWN) && self.classname != "player" && self.th_init && !self.preventrespawn && !self.playercontrolled) //do not respawn players or summoned monsters
 	{
@@ -76,11 +72,9 @@ void MarkForRespawn (void)
 		dprint (self.owner.classname);
 		dprint ("\n");
 		dprintv("Marked for respawn: %s\n",self.origin);
-
-		timelimit = random(WANDERING_MONSTER_TIME_MIN, WANDERING_MONSTER_TIME_MAX);
 		
 		newmis = spawn ();
-		newmis.origin = self.origin;
+		setorigin(newmis, self.origin);
 		
 		newmis.flags2 (+) FL_SUMMONED;
 		newmis.lifetime = time + 900;
@@ -98,12 +92,18 @@ void MarkForRespawn (void)
 		}
 		
 		newmis.think = wandering_monster_respawn;
-		newmis.nextthink = time + timelimit;
+		thinktime newmis : self.lifetime;
 			
 		//mark for respawn buff chance
 		newmis.killerlevel = self.killerlevel;
 	}
-	remove(self);
+	if (!self.aflag) {	//if we are a destructible corpse and not fading or faded
+		self.th_init = SUB_Null;
+		self.solid = SOLID_SLIDEBOX;
+		chunk_death();
+	}
+	else
+		remove(self);
 }
 
 void corpseblink (void)
@@ -112,14 +112,23 @@ void corpseblink (void)
 	thinktime self : 0.1;
 	self.scale -= 0.10;
 
-	if (self.scale < 0.10)
-		MarkForRespawn();
+	if (self.scale < 0.10) {
+		if (CheckCfgParm(PARM_RESPAWN)) {
+			setmodel(self, "models/null.spr");
+			self.effects (+) EF_NODRAW;
+			self.lifetime = 0;	//respawn immediately upon our next think
+			self.think = MarkForRespawn;
+			thinktime self : random(WANDERING_MONSTER_TIME_MIN, WANDERING_MONSTER_TIME_MAX);
+		}
+		else
+			remove(self);
+	}
 }
 
 void init_corpseblink (void)
 {
 	CreateYRFlash(self.origin);
-
+	self.aflag = TRUE;
 	self.drawflags (+) DRF_TRANSLUCENT | SCALE_TYPE_ZONLY | SCALE_ORIGIN_BOTTOM;
 
 	corpseblink();
@@ -151,7 +160,29 @@ void () CorpseThink =
 		T_Damage(self,self,self,self.health);
 	else if (CheckCfgParm(PARM_FADE) && self.lifetime < time)			// Time is up, begone with you
 		init_corpseblink();
+	else if (CheckCfgParm(PARM_RESPAWN) && self.lifetime < time)
+		MarkForRespawn();
 };
+
+void CorpsePain (entity attacker, float damage) =
+{
+	if (self.pain_finished > time)
+		return;
+	
+	string mdl;
+	float r = random();
+	
+	if (r<0.33)
+		mdl = "models/flesh1.mdl";
+	else if (r<0.66)
+		mdl = "models/flesh2.mdl";
+	else
+		mdl = "models/flesh3.mdl";
+	
+	ThrowGib(mdl, self.health);
+	ThrowGib("models/blood.mdl", self.health);
+	self.pain_finished = time+0.5;
+}
 
 /*
  * This uses entity.netname to hold the head file (for CorpseDie())
@@ -161,20 +192,20 @@ void()MakeSolidCorpse =
 {
 vector newmaxs;
 // Make a gibbable corpse, change the size so we can jump on it
-   self.deadflag = DEAD_DEAD;
 
 //Won't be necc to pass headmdl once everything has it's .headmodel
 //value set in spawn
-	
 	//self.netname = "corpse";		//PoP
-	self.target = string_null;	//fix by Shanjaq
-    self.th_die = chunk_death;
+	self.deadflag = DEAD_DEAD;
+	SUB_ResetTarget();
+	self.th_pain = CorpsePain;	//SoC
+	self.th_die = chunk_death;
 	if (self.skin==GLOBAL_SKIN_ASH)
 		self.th_die = shatter;
 	//self.touch = obj_push; //Pushable corpses has the side effect of getting the player stuck when ironically it was meant to prevent that
     self.health = random(10,25);
 	if (self.mass >= 30 && self.mass <= 100)
-		self.health += (self.mass*0.75);	//ws: increase health for big corpses (yakmen, maulotaurs)
+		self.health += (self.mass*0.5);	//ws: increase health for big corpses (yakmen, maulotaurs)
 	self.takedamage = DAMAGE_YES;
 	self.solid = SOLID_PHASE;
 	self.experience_value = 0;
@@ -188,11 +219,13 @@ vector newmaxs;
 	newmaxs=self.maxs;
 	if(newmaxs_z>5)
 		newmaxs_z=5;
-	if (self.classname!="monster_death_knight")
-		setsize (self, self.mins,newmaxs);
-	else
+	if (self.netname == "maulotaur")
+		setsize (self, self.mins,newmaxs+'0 0 5');
+	else if (self.classname=="monster_death_knight")
 		//setsize (self, '-13 -28 -14', '10 3 -9'); //resize the dk berserker because i fucked up his origin and im too lazy to fix it. Also wtf are you doing using HexenC? It's 2017 nerd, go use UE4
 		setsize (self, '-26 -28 -14', '88 28 -9'); //ws: it was still messed up. 2017 eh?
+	else
+		setsize (self, self.mins,newmaxs);
 	if(self.flags&FL_ONGROUND)
 		self.velocity='0 0 0';
     self.flags(-)FL_MONSTER;
@@ -215,10 +248,12 @@ vector newmaxs;
     }
     else 
 	{
-		self.lifetime = time + random(20,30);
+		if (CheckCfgParm(PARM_RESPAWN) && !CheckCfgParm(PARM_FADE))
+			self.lifetime = time + random(WANDERING_MONSTER_TIME_MIN, WANDERING_MONSTER_TIME_MAX);
+		else
+			self.lifetime = time + 1;//random(20,30);
+		self.aflag = FALSE;
 		self.think=CorpseThink;
 		thinktime self : 0;
-		//return;
 	}
 };
-

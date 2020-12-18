@@ -30,8 +30,6 @@ float SPAWNFLAG_REMOVE_PP	= 16;
 float SPAWNFLAG_NO_PP		= 32;
 
 float SPAWNFLAG_ALLTOUCH	= 65536;
-float PUSH_SHEEP			= 64;	//trigger_jump
-float JUMP_CHANGEANGLE		= 8;	//trigger_monsterjump
 
 // the wait time has passed, so set back up for another activation
 void() multi_wait =
@@ -75,11 +73,12 @@ void() multi_trigger =
 
 	if (self.experience_value && activator.flags&FL_CLIENT)
 	{
-		AwardExperience(activator,self,self.experience_value);	//ws: changes to self.experience_value from 0 (?)
+		AwardExperience(activator,self,self.experience_value);	//ws: changed to self.experience_value from 0 (?)
 	}
 
 	self.check_ok=TRUE;
 	SUB_UseTargets();
+
 	if (self.wait > 0)
 	{
 		self.think = multi_wait;
@@ -90,7 +89,6 @@ void() multi_trigger =
 		// called while C code is looping through area links...
 		self.touch = self.think = self.use = SUB_Null;
 		self.nextthink=-1;
-		
 /*Don't want to remove- may be checked later
 		thinktime self : 0.1;
 		self.think = SUB_Remove;
@@ -215,16 +213,19 @@ void() multi_use =
 
 	if (!check_puzzle_pieces(other,removepp,inversepp))
 	{
-		if (self.no_puzzle_msg && !deathmatch)
+		if ((self.no_puzzle_msg || self.no_puzzle_str!="") && !deathmatch)
 		{
-			temp = getstring(self.no_puzzle_msg);
+			if (self.no_puzzle_str!="")
+				temp = self.no_puzzle_str;
+			else
+				temp = getstring(self.no_puzzle_msg);
 			if (!deathmatch)
 				centerprint (other, temp);
 			self.attack_finished = time + 2;
 		}
 		return;
 	}
-	
+
 	self.enemy = activator;
 	multi_trigger();
 };
@@ -272,9 +273,12 @@ void() multi_touch =
 
 	if (!check_puzzle_pieces(other,removepp,inversepp))
 	{
-		if (self.no_puzzle_msg && !deathmatch)
+		if ((self.no_puzzle_msg || self.no_puzzle_str!="") && !deathmatch)
 		{
-			temp = getstring(self.no_puzzle_msg);
+			if (self.no_puzzle_str!="")
+				temp = self.no_puzzle_str;
+			else
+				temp = getstring(self.no_puzzle_msg);
 			if (!deathmatch)
 				centerprint (other, temp);
 			self.attack_finished = time + 2;
@@ -427,6 +431,11 @@ void () interval_use =
 //	dprint("interval used\n");
 
 	self.think = interval_use;
+	if (self.count) {
+		++self.counter;
+		if (self.counter > self.count)
+			self.think = SUB_Remove;
+	}
 	thinktime self : self.wait;
 };
 
@@ -440,9 +449,9 @@ void() trigger_interval =
 	InitTrigger ();
 
 	self.use = interval_use;
-
+	
 	self.think = interval_use;
-	if (!self.targetname)
+	if (!self.targetname && !self.targetid)
 		thinktime self : 0.1;
 };
 
@@ -560,7 +569,7 @@ void counter_return_buttons ()
 
 void() counter_use_ordered =
 {
-string oldtarg;
+string oldtarg, oldstr;
 float oldmsg;
 string temp;
 
@@ -590,8 +599,13 @@ string temp;
 			if (activator.classname == "player" && (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0 &&
 			    !deathmatch)
 			{
-				if(self.message)
-					temp=getstring(self.message);
+				if(self.message || self.messagestr!="")
+				{
+					if (self.messagestr!="")			//SoC: triggers can use messagestr for raw string instead of using an index for strings.txt
+						temp=self.messagestr;
+					else
+						temp=getstring(self.message);
+				}
 				else
 					temp="Sequence completed!";
 				centerprint(activator, temp);
@@ -610,8 +624,13 @@ string temp;
 			self.check_ok = FALSE;
 			if (activator.classname == "player" && !deathmatch) 
 			{
-				if (self.msg2) 
-					temp = getstring(self.msg2);
+				if (self.msg2 || self.msg2str!="")
+				{
+					if (self.msg2str!="")			//SoC: triggers can use msg2str for raw string instead of using an index for strings.txt
+						temp = self.msg2str;
+					else
+						temp = getstring(self.msg2);
+				}
 				else
 					temp = "Nothing seemed to happen";
 				centerprint(activator, temp);
@@ -621,8 +640,10 @@ string temp;
 			self.target = self.puzzle_id;
 			oldmsg = self.message;
 			self.message = FALSE;
+			self.messagestr = "";	//SoC
 			SUB_UseTargets();
 			self.message = oldmsg;
+			self.messagestr = oldstr;
 			self.target = oldtarg;
 
 			self.cnt = 1;
@@ -1105,16 +1126,12 @@ float poof_speed;
 	if (!other.health&&other.size!='0 0 0')
 	{//Exclude projectiles!
 		other.origin = t.origin;
-		if((!t.spawnflags&1&&self.classname != "teleportcoin") && !(self.spawnflags & SILENT))	//In case you don't want to push them in a certain dir
+		if(!t.spawnflags&1&&self.classname != "teleportcoin")	//In case you don't want to push them in a certain dir
 			other.velocity = (v_forward * other.velocity_x) + (v_forward * other.velocity_y);
 		return;
 	}
 
-   if ( (self.spawnflags & SILENT) ) {
-	setorigin ( other, t.origin + '0.00000 0.00000 -27.00000');
-   } else {
-	setorigin ( other, t.origin);
-   }
+	setorigin (other, t.origin);
 
 	if (!self.spawnflags & SILENT)
 	{
@@ -1138,8 +1155,7 @@ float poof_speed;
 		*/
 		else
 			poof_speed = 300;
-		if(mapname!="peanutshop") //prevent infinite loop between landings
-			other.velocity = v_forward * poof_speed;
+		other.velocity = v_forward * poof_speed;
 	}
 
 	other.flags(-)FL_ONGROUND;
@@ -1347,9 +1363,10 @@ float damage;
 			damage = other.health - self.level;
 		else
 			damage = self.dmg;
-		T_Damage (other, self, self, damage);
-		if (self.deathtype)
+		if (self.deathtype && other.health-damage<=0)
 			other.deathtype = self.deathtype;
+		T_Damage (other, self, self, damage);
+		
 		if(self.wait)
 		{
 			self.solid = SOLID_NOT;
@@ -1360,6 +1377,24 @@ float damage;
 
 	return;
 };
+
+void hurt_use ()
+{
+entity targ, save;
+	while (1) {
+		targ = find (targ, targetname, self.target);
+		if (!targ)
+			return;
+		
+		save = other;
+		other = targ;
+		if (other.health || other.th_die)
+			hurt_touch();
+		else
+			remove(other);
+		other = save;
+	}
+}
 
 /*QUAKED trigger_hurt (.5 .5 .5) PLAYER_ONLY MONSTER_ONLY x INACTIVE
 Any object touching this will be hurt
@@ -1373,10 +1408,16 @@ Any object touching this will be hurt
 */
 void() trigger_hurt =
 {
-	InitTrigger ();
-	self.touch = hurt_touch;
+	if (self.target)
+		self.use = hurt_use;
+	else {
+		InitTrigger ();
+		self.touch = hurt_touch;
+	}
 	if (!self.dmg)
 		self.dmg = 1000;
+	if(!self.wait)
+		self.wait = 1;
 };
 
 //============================================================================
@@ -1384,6 +1425,7 @@ void() trigger_hurt =
 //============================================================================
 
 float PUSH_ONCE = 1;
+float PUSH_SHEEP = 64;
 
 void trigger_push_gone (void)
 {
@@ -1392,9 +1434,6 @@ void trigger_push_gone (void)
 
 void() trigger_push_touch =
 {
-	if(self.inactive)
-		return;
-
 	if(self.spawnflags&PUSH_SHEEP && other.model=="models/sheep.mdl")
 		return;
 	if (other.health > 0)
@@ -1406,7 +1445,7 @@ void() trigger_push_touch =
 		}
 		if ((other.classname == "player") && (other.flags & FL_ONGROUND))
 		{
-			sound (other, CHAN_AUTO, "ambience/windpush.wav", 1, ATTN_NORM);
+			sound (other, CHAN_AUTO, self.noise1, 1, ATTN_NORM);
 			other.flags (-) FL_ONGROUND;
 		}
 	}
@@ -1429,7 +1468,9 @@ If you target it, it removes itself when trigger is set off.
 void() trigger_push =
 {
 	InitTrigger ();
-	precache_sound ("ambience/windpush.wav");
+	if (!self.noise1)
+		self.noise1="ambience/windpush.wav";
+	precache_sound(self.noise1);
 	self.touch = trigger_push_touch;
 	self.use = trigger_push_gone;
 	if (!self.speed)
@@ -1443,6 +1484,9 @@ void() trigger_monsterjump_touch =
 {
 	if ( other.flags & (FL_MONSTER | FL_FLY | FL_SWIM) != FL_MONSTER )
 		return;
+	if (self.noise1 || self.noise2 || self.noise3 || self.noise4)	//SoC
+		if (other.classname!=self.noise1 && other.classname!=self.noise2 && other.classname!=self.noise3 && other.classname!=self.noise4)
+			return;
 
 // set XY even if not on ground, so the jump will clear lips
 	if(other.classname=="monster_eidolon")
@@ -1459,11 +1503,6 @@ void() trigger_monsterjump_touch =
 	other.flags(-)FL_ONGROUND;
 
 	other.velocity_z = self.height;
-	
-	if (self.spawnflags & JUMP_CHANGEANGLE && other.flags & FL_MONSTER)	//ws: turn monster to face direction of jump
-	{
-		other.angles_y = self.angles_y;
-	}
 
 	if(self.wait==-1)
 		self.touch=SUB_Null;
@@ -1908,7 +1947,7 @@ void() control_return =
 {	
 	if(self.goalentity.classname!="catapult")
 	{
-		self.goalentity.oldthink=SUB_Null;
+		//self.goalentity.oldthink=SUB_Null;
 		self.goalentity.think=reset_mangle;
 		thinktime self.goalentity : 0;
 	}
@@ -2095,8 +2134,11 @@ FEILDS
 void trigger_message_transfer_use ()
 {
 	string temp;
-
-	temp = getstring(self.message);
+	
+	if (self.messagestr != "")			//SoC: triggers can use messagestr for raw string instead of using an index for strings.txt
+		temp = self.messagestr;
+	else
+		temp = getstring(self.message);
 	if (!deathmatch)
 		centerprint(activator, temp);
 	other.nexttarget=self.target;

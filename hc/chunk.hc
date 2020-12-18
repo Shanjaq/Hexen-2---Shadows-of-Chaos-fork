@@ -538,20 +538,21 @@ float bloodpool_check(float type)
 	length = bloodsplat_radius[type];
 	makevectors (self.angles);
 	
-	traceline (location + v_up*8 + v_right * 8 + v_forward * 8,location - v_up*32 + v_right * 8 + v_forward * 8, TRUE, self);
+	//traceline (location + v_up*8 + v_right * 8 + v_forward * 8, location - v_up*32 + v_right * 8 + v_forward * 8, TRUE, self);
+	traceline (location + v_up*8, location - v_up*200, TRUE, self);
 	holdplane = trace_plane_normal;
 	if(trace_fraction==1)	// Nothing below victim
 		return FALSE;
 
-	traceline (location + v_up*8 - v_right * length + v_forward * length,location - v_up*32 - v_right * length + v_forward * length, TRUE, self);
+	traceline (location + v_up*8 - v_right * length + v_forward * length, location - v_up*32 - v_right * length + v_forward * length, TRUE, self);
 	if ((holdplane != trace_plane_normal) || (trace_fraction==1))
 		return FALSE;
 
-	traceline (location + v_up*8 + v_right * length - v_forward * length,location - v_up*32 + v_right * length - v_forward * length, TRUE, self);
+	traceline (location + v_up*8 + v_right * length - v_forward * length, location - v_up*32 + v_right * length - v_forward * length, TRUE, self);
 	if ((holdplane != trace_plane_normal) || (trace_fraction==1))
 		return FALSE;
 
-	traceline (location + v_up*8 - v_right * length - v_forward * length,location - v_up*32 - v_right * length - v_forward * length, TRUE, self);
+	traceline (location + v_up*8 - v_right * length - v_forward * length, location - v_up*32 - v_right * length - v_forward * length, TRUE, self);
 	if ((holdplane != trace_plane_normal) || (trace_fraction==1))
 		return FALSE;
 	
@@ -562,14 +563,20 @@ void BloodSplat(float type)
 {
 entity splat;
 	
-	if (!bloodpool_check(type))
-	{	//try smaller splats if bigger splat wont fit
-		if (type==BLOOD_LARGE)
-			BloodSplat(rint(random(BLOOD_SMALL,BLOOD_MED)));
-		else if (type==BLOOD_MED)
-			BloodSplat(BLOOD_SMALL);
-		else
-			return;
+	if (type!=BLOOD_GREEN) {
+		if (!bloodpool_check(type))
+		{	//try smaller splats if bigger splat wont fit
+			if (type==BLOOD_LARGE) {
+				BloodSplat(BLOOD_MED);
+				return;
+			}
+			else if (type==BLOOD_MED) {
+				BloodSplat(BLOOD_SMALL);
+				return;
+			}
+			else
+				return;
+		}
 	}
 
 	traceline (self.origin + v_up*8,self.origin - v_up*32, TRUE, self);
@@ -579,39 +586,43 @@ entity splat;
 	splat.classname="bloodsplat";
 	splat.movetype=MOVETYPE_NONE;
 	splat.solid=SOLID_TRIGGER;		//SOLID_NOT
-	splat.drawflags=SCALE_ORIGIN_BOTTOM;
+	splat.drawflags=SCALE_ORIGIN_BOTTOM+SCALE_TYPE_XYONLY;
+	splat.scale = self.scale*random(0.7,0.9);
 	if (self.model == "models/spider.mdl")
-		splat.scale = 0.5;
+		splat.scale *= 0.5;
 	else if (self.netname == "yakman")
-		splat.scale = 1.3;
+		splat.scale *= 1.25;
 	else if (self.netname == "maulotaur")
-		splat.scale = random(1.4,1.6);
+		splat.scale *= 1.5;
 	else if (self.bufftype && self.scale>1)
 		splat.scale = self.scale*random(0.75, 0.9);
-	else
-		splat.scale = random(0.75, 0.9);
-	splat.angles_y+=random(360);
-	splat.touch=bloodpool_step;
-	if (CheckCfgParm(PARM_FADE)) {
-		splat.think=SUB_Remove;
-		thinktime splat : random(40,30);
-	}
 	
 	setmodel (splat, bloodsplat_mdl[type]);
 	setsize(splat,'0 0 0','0 0 0');
 	setorigin(splat,trace_endpos + '0 0 0.1');	//0.5
 	
-	/*entity oself;
-	oself = self;
-	self = splat;
-	pitch_roll_for_slope('0 0 0');
-	self = oself;*/
+	splat.angles_y=random(360);
+	splat.touch=bloodpool_step;
+	if (CheckCfgParm(PARM_FADE)) {
+		splat.think=SUB_Remove;
+		thinktime splat : random(30,20);
+	}
+	
+	if (trace_plane_normal_x || trace_plane_normal_y)
+	{
+		entity oself;
+		oself = self;
+		self = splat;
+		pitch_roll_for_slope(trace_plane_normal);
+		self = oself;
+	}
 }
 
 void() archer_gibs;
 void() death_knight_gibs;
 void() afrit_gibs;
 void() imp_gibs;
+void() undying_gibs;
 
 void chunk_reset ()
 {
@@ -660,7 +671,7 @@ void chunk_death (void)
 		deathsound="misc/bshatter.wav";
 	else if (self.thingtype==THINGTYPE_FLESH)
 	{
-		if (!self.flags&FL_SWIM && self.flags&FL_ONGROUND)
+		if (!self.flags&FL_SWIM)
 		{
 			if (self.netname == "spider")
 				BloodSplat(BLOOD_GREEN);
@@ -674,13 +685,12 @@ void chunk_death (void)
 				BloodSplat(BLOOD_SMALL);
 		}
 		
-		if (self.headmodel)
+		if (self.headmodel) {
 			ThrowGib (self.headmodel, self.health);
-		if (self.netname == "undying")
-		{
-			ThrowGib ("models/ZombiePal_arm.mdl", self.health);
-			ThrowGib ("models/ZombiePal_leg.mdl", self.health);
+			self.headmodel = "";
 		}
+		if (self.netname == "undying")
+			undying_gibs();
 		if (self.classname == "monster_archer" || self.classname == "monster_archer_lord" || self.classname == "monster_archer_ice")
 			archer_gibs();
 		if (self.classname == "monster_imp_ice" || self.classname == "monster_imp_fire")
@@ -768,11 +778,12 @@ void chunk_death (void)
 		return;
 
 	SUB_UseTargets();
-	self.target = string_null;	//fix by Shanjaq
+	SUB_ResetTarget();
 	
-	if (self.th_init)
-	{
-		//set up respawn time
+	if (self.th_init && self.th_init != SUB_Null)
+	{	//set up respawn time
+		self.aflag = TRUE;		//tell MarkForRespawn not to gib this entity again
+		self.lifetime = time + random(WANDERING_MONSTER_TIME_MIN, WANDERING_MONSTER_TIME_MAX);
 		self.think = MarkForRespawn;
 		self.nextthink = time + 0.01;
 	}
@@ -786,3 +797,29 @@ void chunk_death (void)
 	}
 }
 
+void bloodspew ()
+{
+	if (time > self.lifetime || !self.owner || self.count-self.cnt<0)
+		remove(self);
+	
+	setorigin(self, self.owner.origin + self.view_ofs);
+	particle2(self.origin,'-10 -10 60','10 10 100',rint (256 + 16*8 + random(9)),PARTICLETYPE_FASTGRAV,self.count-self.cnt);
+	//SpawnPuff (self.origin, '0 0 80',self.count-self.cnt,self.owner);
+	self.cnt+=self.scalerate;
+	thinktime self : HX_FRAME_TIME*0.5;
+}
+
+void bloodspew_create (float life, float amt, vector ofs)
+{
+entity new;
+	if (life<1)
+		return;
+	new = spawn();
+	new.lifetime = time+(life*HX_FRAME_TIME*0.5);
+	new.scalerate = (amt-amt*0.1)/life;
+	new.count = amt;
+	new.owner = self;
+	new.view_ofs = ofs;
+	new.think = bloodspew;
+	thinktime new : 0;
+}

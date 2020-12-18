@@ -18,12 +18,15 @@ void(string sound) maul_voice;
 
 float MAUL_HIT_FORCE = 30;
 float MAUL_CHG_FORCE = 50;
-float MAUL_QUAKE_RANGE = 350;
+float MAUL_QUAKE_RANGE = 360;
+
+float MAUL_SKIN_DEAD = 1;	//skin
 
 void precache_maulotaur()
 {
 	precache_model("models/maultaur.mdl");
 	precache_model("models/drgnball.mdl");
+	precache_model("models/mumshot.mdl");
 	
 	precache_sound("golem/slide.wav");
 	precache_sound("maul/act.wav");
@@ -43,16 +46,14 @@ void precache_maulotaur()
 
 void maul_chargehit (entity victim)
 {
-	if (victim.safe_time>time)
+	if (victim.safe_time>time || !victim.takedamage || victim == world)
 		return;
 	
 	sound (self, CHAN_WEAPON, "weapons/vorpblst.wav", 1, self.lip);	//if (victim.thingtype == THINGTYPE_FLESH)
 	
-	if (!victim.takedamage || victim == world)
-		return;
-	
 	victim.safe_time = time+0.75;
-	victim.deathtype = "maul_charge";
+	if (victim.health - self.dmg*1.5 <= 0)
+		victim.deathtype = "maul_charge";
 	
 	maul_hit (victim, self.dmg*1.5, MAUL_CHG_FORCE*self.scale, 0.5, random(-200,200));
 }
@@ -159,26 +160,29 @@ void maul_charge () [++ $maulat1 .. $maulat12]
 
 void maul_die () [++ $mauldt1 .. $mauldt29]
 {
-	if (self.health <= (-self.max_health*0.1))
-		chunk_death();
-	
 	if (cycle_wrapped) {
-		self.takedamage = DAMAGE_YES;
 		self.frame = $mauldt29;
 		MakeSolidCorpse();
+		return;
 	}
-	else if (self.frame == $mauldt1) {
+	else if (self.health <= (-50*self.scale))
+		chunk_death();
+	
+	if (self.frame == $mauldt1) {
 		stopSound(self,CHAN_WEAPON);
 		stopSound(self,CHAN_BODY);
 		sound (self, CHAN_VOICE, "maul/die.wav", 1, self.lip-0.25);
-		self.takedamage = DAMAGE_NO;	//dont gib during fall animation
+		ThrowGib ("models/blood.mdl", self.health);
+		ThrowGib ("models/blood.mdl", self.health);
+		ThrowGib ("models/blood.mdl", self.health);
 	}
 	else if (self.frame == $mauldt27 && self.flags&FL_ONGROUND)
 		sound (self, CHAN_BODY, "maul/fall.wav", 1, self.lip);
 	
-	if (self.frame <= $mauldt22) {
-		ThrowGib ("models/blood.mdl", self.health);
-	}
+	if (self.frame < $mauldt21)
+		thinktime self : HX_FRAME_TIME*1.5;	//slower animation before he falls
+	else
+		self.skin = MAUL_SKIN_DEAD;
 }
 
 void maul_fballtouch ()
@@ -249,18 +253,24 @@ vector meat_spot;
 	Knockback (victim, self, self, force, zmod);
 }
 
+void() maul_mis;
+
 void maul_melee ()
 {
 	self.aflag = FALSE;	//dont fire missiles in swing anim
-	if (self.scale>1)	//lord version does quake atk
-		maul_smash();
+	if (self.scale>1) {	//lord version does quake atk
+		if (self.check_ok > time)	//too soon to do another quake attack
+			maul_mis();
+		else
+			maul_smash();
+	}
 	else
 		maul_swing();
 }
 
 void maul_mis ()
 {
-float spread,range,dist;
+float spread, range, dist;
 	spread = FALSE;
 	dist = vlen(self.origin-self.enemy.origin);
 	if (self.scale > 1)
@@ -271,7 +281,7 @@ float spread,range,dist;
 	
 	ai_face();
 	
-	if (dist<320 && self.scale>1 && random()<0.75)	//lord variant does melee attack from greater range
+	if (dist<320 && self.scale>1 && self.check_ok < time && random()<0.75)	//lord variant does melee attack from greater range
 	{
 		self.aflag = FALSE;
 		self.think = maul_smash;
@@ -314,12 +324,12 @@ float spread,range,dist;
 	
 	if (spread)
 	{	//check if theres room for fireball spread
-		makevectors(self.angles);
-		float ofs;
+	local float ofs;
 		ofs = -20;
-		traceline(self.origin+self.proj_ofs,self.enemy.origin+self.proj_ofs+v_forward*self.level,FALSE,self);
+		makevectors(self.angles);
+		traceline(self.origin+self.proj_ofs,(self.enemy.origin+self.enemy.proj_ofs)+(v_forward*self.level),FALSE,self);
 		while (trace_fraction == 1 && ofs <= 20) {
-			traceline(self.origin+self.proj_ofs,self.enemy.origin+self.proj_ofs+(v_forward*self.level)+(v_right*ofs),FALSE,self);
+			traceline(self.origin+self.proj_ofs,(self.enemy.origin+self.proj_ofs)+(v_forward*self.level)+(v_right*ofs),FALSE,self);
 			ofs +=20;
 		}
 		if (trace_fraction == 1 || trace_ent.takedamage || random()<0.25)
@@ -402,25 +412,44 @@ vector	org1,org2;
 void maul_smashquaking ()
 {
 float dist;
+vector ang;
 	if (time > self.lifetime)
 		remove(self);
-	if(!self.enemy)
-		return;
-	if(fabs(self.enemy.origin_z-self.origin_z)>48)
-		return;
+	thinktime self : HX_FRAME_TIME;
 	
-	dist = vlen(self.enemy.origin - self.origin);
-	if (dist < MAUL_QUAKE_RANGE) {
-		float damg;
-		damg = self.dmg/dist;
-		if (damg>=1) {
-			self.enemy.deathtype = "maul_quake";
-			T_Damage(self.enemy, self, self, damg);
+	if (self.enemy && (fabs(self.enemy.origin_z-self.origin_z)<32)) {
+		dist = vlen(self.enemy.origin - self.origin);
+		if (dist < MAUL_QUAKE_RANGE) {
+			float damg;
+			damg = self.dmg/dist;
+			if (damg>=1) {
+				if (self.enemy.health-damg <= 0)
+					self.enemy.deathtype = "maul_quake";
+				T_Damage(self.enemy, self, self, damg);
+			}
 		}
 	}
+	
 	if (self.dmg>15)
 		self.dmg-=15;
-	thinktime self : HX_FRAME_TIME;
+	
+	if (self.t_width < time) {		//create smoke fx in circle around quake radius as a visual indicator
+		self.t_width = time+0.25;
+		if (self.dmg<=15)
+			return;
+		else if (self.dmg<=45) {	//if quake has gotten small, just make smoke in the center
+			CreateWhiteSmoke(self.origin,'0 0 12',HX_FRAME_TIME*random(0.5,1.5));
+			return;
+		}
+		ang_y = 0;
+		while (ang_y < 360) {
+			makevectors(ang);
+			traceline(self.origin,self.origin+v_forward*self.dmg,TRUE,self);
+			if (trace_fraction==1)
+					CreateWhiteSmoke(trace_endpos,'0 0 12',HX_FRAME_TIME*random(0.5,1.5));
+			ang_y += random(20,40);
+		}
+	}
 }
 
 void maul_smashquake ()
@@ -429,6 +458,7 @@ void maul_smashquake ()
 	dist = vlen(self.enemy.origin - self.origin);
 	
 	MonsterQuake(MAUL_QUAKE_RANGE);
+	self.check_ok = time+2;	//dont do quake attack until then
 	
 	if(!self.enemy)
 		return;
@@ -436,9 +466,18 @@ void maul_smashquake ()
 	entity quaker = spawn();
 	setsize (quaker, '0 0 0', '0 0 0');
 	setorigin (quaker, self.origin);
+	if (!self.flags&FL_ONGROUND) {
+		traceline (self.origin, self.origin-'0 0 32', TRUE, self);
+		if (trace_fraction==1) {	//no ground
+			remove(quaker);
+			return;
+		}
+		else
+			setorigin (quaker, trace_endpos);
+	}
 	quaker.dmg = MAUL_QUAKE_RANGE*1.5;
 	quaker.enemy = self.enemy;
-	quaker.lifetime = time+2.75;
+	quaker.lifetime = time+2.5;
 	quaker.think = maul_smashquaking;
 	thinktime quaker : 0;
 }
@@ -511,7 +550,7 @@ void maul_swing () [++ $maulsw1 .. $maulsw18]
 		thinktime self : 0;
 	}
 	if (self.frame == $maulsw1)
-		maul_voice ("maul/act.wav");//sound (self, CHAN_VOICE, "maul/act.wav", 1, ATTN_NORM);
+		maul_voice ("maul/act.wav");
 	else if (self.frame == $maulsw11)
 		sound (self, CHAN_WEAPON, "weapons/vorpswng.wav", 1, self.lip);
 	
@@ -529,8 +568,9 @@ void maul_swing () [++ $maulsw1 .. $maulsw18]
 	if (self.frame == $maulsw13)
 	{
 		maul_swingmelee();
-		if (self.aflag)
+		if (self.aflag) {
 			maul_fballfire();
+		}
 	}
 }
 
@@ -565,7 +605,7 @@ void monster_maulotaur ()
 		remove(self);
 		return;
 	}
-
+	
 	if(!self.flags2&FL_SUMMONED && !self.flags2&FL2_RESPAWN)
 		precache_maulotaur();
 	
@@ -574,41 +614,42 @@ void monster_maulotaur ()
 	self.counter = 0;	//tracks when to stop charging
 	self.dmg = 12;		//melee attack damage
 	self.drawflags = SCALE_ORIGIN_BOTTOM;
-	self.flags (+) FL_MONSTER;
-	self.flags2 (+) FL_ALIVE;
 	self.level = 80;	//melee range
 	self.lip = ATTN_NORM;	//sound attenuation
 	self.mass = 50;
 	self.mintel = 10;
-	self.monsterclass = CLASS_HENCHMAN;
+	self.monsterclass = CLASS_LEADER;
 	self.movetype = MOVETYPE_STEP;
 	self.netname = "maulotaur";
-	self.preventrespawn = TRUE;
+	self.preventrespawn = FALSE;
 	self.proj_ofs = '0 0 44';
 	self.sightsound = "maul/see.wav";
 	self.scale = 1;
-	self.solid = SOLID_SLIDEBOX;
 	self.thingtype = THINGTYPE_FLESH;
 	self.view_ofs = '0 0 80';
 	self.yaw_speed = 15;
 	
 	setmodel (self, "models/maultaur.mdl");
-	setsize (self, '-30 -30 0', '30 30 88');
+	setsize (self, '-30 -30 0', '30 30 96');
+	self.solid = SOLID_SLIDEBOX;
+	self.hull = HULL_PLAYER;
 	
 	if (self.classname=="monster_maulotaur_lord")
 	{
-		self.dmg *= 2;
+		self.dmg *= 1.5;
 		if (self.experience)
 			self.experience_value = self.experience;
 		else
 			self.experience_value = 750;
 		if (!self.health)
-			self.health = 1500;
+			self.health = 2000;
+		//self.hull = HULL_GOLEM;
 		self.level = 100;	//melee range
-		self.lip = 0.5;	//sound attenuation
+		self.lip = 0.5;		//sound attenuation
 		self.mass *= 1.5;
 		self.mintel *= 1.5;
-		self.monsterclass = CLASS_LEADER;
+		self.monsterclass = CLASS_BOSS;
+		self.preventrespawn = TRUE;
 		self.proj_ofs *= 1.5;
 		self.scale = 1.5;
 		self.view_ofs *= 1.5;
@@ -619,10 +660,12 @@ void monster_maulotaur ()
 			self.experience_value = self.experience;
 		else
 			self.experience_value = 300;
-		if(!self.health)
+		if (!self.health)
 			self.health = 500;
+		self.buff = 1;
 	}
-	self.max_health = self.health;	//save initial health for gib check
+	self.max_health = self.health;
+	self.init_exp_val = self.experience_value;
 	
 	self.th_stand = maul_stand;
 	self.th_walk = maul_walk;
@@ -637,8 +680,8 @@ void monster_maulotaur ()
 
 /*monster_maulotaur_lord (1 0.3 0) (-45 -45 0) (45 45 132) AMBUSH
 	All around bigger, badder, & bolder. More health, moves faster, hits harder, shoots faster missiles, etc. Uses alternate quake attack for melee.
-	Experience: 500
-	Health: 1400
+	Experience: 750
+	Health: 2000
 */
 void monster_maulotaur_lord ()
 {

@@ -274,7 +274,7 @@ void imp_die ()
 			self.velocity_x = self.velocity_y = 0.0;
 		}
 		else
-			self.frame==$death7;
+			self.frame=$death7;	//self.frame==$death7;
 	
 	MonsterCheckContents();
 	
@@ -651,7 +651,7 @@ void imp_rise () [++ $impfly1 .. $impfly20]
 	}
 	else if(self.frame>$impfly14 &&self.attack_finished<time)
 	{
-		self.frame==$impfly14;
+		self.frame=$impfly14;	//self.frame==$impfly14;
 		self.velocity_z-=100;
 	}
 	else
@@ -1588,7 +1588,7 @@ void init_imp (float which_skin)
 		else
 		{
 			self.max_health=self.health = 75+self.skin*25;
-			self.experience_value = 100+self.skin*100;
+			self.experience_value = 150+self.skin*50;
 			self.mass = 3;
 			self.th_die = imp_die_init;
 		}

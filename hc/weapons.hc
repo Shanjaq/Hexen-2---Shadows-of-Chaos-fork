@@ -8,9 +8,6 @@ void(vector org, vector vel, float damage,entity victim) SpawnPuff;
 void() PlayerCrouch;
 void() UseInventoryItem;
 void() ImpulseCommands;
-void() frost_launch;
-void() spellmod_install;
-void() spellfire;
 
 //============================================================================
 
@@ -93,8 +90,6 @@ void() T_PhaseMissileTouch =
 	local float	damg;
 //	entity new;
 
-	damg = random(30,50);
-
 	self.flags (-) FL_ONGROUND;	// So it never thinks it is touching the ground
 
 	if (other == self.owner)
@@ -103,14 +98,12 @@ void() T_PhaseMissileTouch =
 	if ((self.enemy == other) && (other != world))  // Can't hit same enemy twice in a row but you can hit world twice
 		return;
 
-	if ((self.classname == "axeblade") || (self.classname == "powerupaxeblade"))
+	if (self.netname=="axeblade")
 	{
-		damg = self.dmg;
-		
-		self.cnt +=1;
+		//self.cnt +=1;
 		self.velocity = self.velocity * 0.75;
 		self.angles = vectoangles(self.velocity);
-		sound (self, CHAN_WEAPON, "paladin/axric1.wav", 1, ATTN_NORM);
+		//sound (self, CHAN_WEAPON, "paladin/axric1.wav", 1, ATTN_NORM);
 		if (self.goalentity)
 		{
 			if (self.goalentity.classname=="ax_tail")
@@ -120,11 +113,13 @@ void() T_PhaseMissileTouch =
 			}
 		}
 	}
+	
+	self.cnt +=1;
 
 	if (pointcontents(self.origin) == CONTENT_SKY)
 	{
-		sound (self, CHAN_VOICE, "misc/null.wav", 1, ATTN_NORM);
-		sound (self, CHAN_WEAPON, "misc/null.wav", 1, ATTN_NORM);
+		stopSound(self,CHAN_VOICE);
+		stopSound(self,CHAN_WEAPON);
 		if ((self.classname == "axeblade") || (self.classname == "powerupaxeblade"))
 			remove(self.goalentity); // Remove tail
 		remove(self);
@@ -133,21 +128,16 @@ void() T_PhaseMissileTouch =
 
 	if (other.health)	// Hit something that can be hurt
 	{
-		
-		T_Damage (other, self, self.owner, damg );
+		spawn_touchpuff (damg, other);
+		T_Damage (other, self, self.owner, self.dmg);
 		self.counter -=1;
 		self.enemy = other;
 	}
 	else
 	{
 		self.enemy = other;
-		if (self.cnt <4)	// Bounce three times then die
-		{
-			if (self.classname == "powerupaxeblade")
-				CreateBSpark (self.origin - '0 0 30');
-			else
-				CreateSpark (self.origin - '0 0 30');
-		}
+		if (self.cnt < self.hoverz)	//hit wall, so create appropriate effect
+			self.blocked();
 		else
 			self.counter = 0;
 	}	
@@ -158,22 +148,17 @@ void() T_PhaseMissileTouch =
 
 	if ((other.health) || (self.counter < 1))
 	{
-		sound (self, CHAN_WEAPON, "weapons/explode.wav", 1, ATTN_NORM);
-
-		if (self.classname == "powerupaxeblade")
-			CreateBlueExplosion (self.origin);
-		else
-			starteffect(CE_SM_EXPLOSION , self.origin);
+		self.th_die();
 	}
 	else
-		sound (self, CHAN_WEAPON, "paladin/axric1.wav", 1, ATTN_IDLE);
+		sound (self, CHAN_WEAPON, self.sightsound, 1, ATTN_IDLE);
 
 	if (self.counter < 1)
 	{
-		if ((self.classname == "axeblade") || (self.classname == "powerupaxeblade"))
+		if (self.netname=="axeblade")
 			remove(self.goalentity); // Remove tail
 
-		sound (self, CHAN_VOICE, "misc/null.wav", 1, ATTN_NORM);
+		stopSound(self,CHAN_VOICE);
 		remove(self);
 	}
 };
@@ -590,10 +575,10 @@ float W_CheckNoAmmo (float check_weapon)
 		{
 			if(self.artifact_active&ART_TOMEOFPOWER)
 			{
-				if(self.bluemana >= MMIS_TOME_COST)
+				if(self.bluemana >= MMIS_SHOCK_COST)
 					return TRUE;
 			}
-			else if(self.bluemana >= MMIS_COST)
+			else if(self.bluemana >= MMIS_SHOCK_COST)
 					return TRUE;
 		}
 	}
@@ -964,13 +949,6 @@ float	it, am, fl;
 	{
 		fl = IT_WEAPON6;
 	}
-	
-	if (self.sale == 1) {
-		self.choice = self.impulse;
-		//car = ftos(self.choice);
-		// sprint (self, "3\n");
-		return;
-	}
 
 	self.impulse = 0;
 
@@ -1176,57 +1154,6 @@ if (self.welcomeshown <= 16)		// set endtime of welcome message here
 	}
 }*/
 	ImpulseCommands ();
-
-// Peanut
-	if (self.handy == 2) {
-		if ((self.Lspell == 25) || (self.Lspell == 2)) {
-			if ((self.Lspell == 25) && (self.magic_finished < time))
-				frost_launch();
-		}
-		else
-		{
-			if (time >= (self.LfingerC - ((self.spelltop * 0.36250) * ((self.Lsupport & SUPPORT_RADIUS) > 0)))) {
-				if (self.predebt == 0)
-				{
-					if (self.modding)
-					{
-						spellmod_install();
-						self.LfingerC = time + self.spelltop;
-					}
-					else if (!(self.Lsupport & SUPPORT_RADIUS))
-					{
-						spellfire();
-						self.LfingerC = time + self.spelltop;
-					}
-				}
-			}
-		}
-	}
-	
-	if (self.handy == 3) {
-		if ((self.Rspell == 25) || (self.Rspell == 2)) {
-			if ((self.Rspell == 25) && (self.magic_finished < time))
-				frost_launch();
-		}
-		else
-		{
-			if (time >= (self.RfingerC - ((self.spelltop * 0.36250) * ((self.Rsupport & SUPPORT_RADIUS) > 0)))) {
-				if (self.predebt == 0)
-				{
-					if (self.modding)
-					{
-						spellmod_install();
-						self.RfingerC = time + self.spelltop;
-					}
-					else if (!(self.Rsupport & SUPPORT_RADIUS))
-					{
-						spellfire();
-						self.RfingerC = time + self.spelltop;
-					}
-				}
-			}
-		}
-	}
 	
 	if (self.playerclass==CLASS_ASSASSIN && self.button1 && self.weapon != IT_WEAPON2 && self.whiptime < time)
 	{
@@ -1236,7 +1163,7 @@ if (self.welcomeshown <= 16)		// set endtime of welcome message here
 	if (time < self.attack_finished)
 		return;
 
-	// check for attack
+// check for attack
 	if (self.button0)
 	{
 		W_Attack (FALSE);

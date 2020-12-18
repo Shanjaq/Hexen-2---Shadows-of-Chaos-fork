@@ -5,6 +5,7 @@
 float SPAWNFLAG_ACTIVATED	= 8;
 
 void obj_barrel_explode();
+float SPAWNFLAG_USESTRING = 131072;
 
 void SUB_Null() {}
 
@@ -78,8 +79,8 @@ void InitTrigger()
 
 void(vector tdest, float tspeed, void() func) SUB_CalcMove =
 {
-	local vector vdestdelta;
-	local float  len, traveltime;
+vector vdestdelta;
+float  len, traveltime;
 
 	if(!tspeed)
 		objerror("No speed is defined!");
@@ -398,6 +399,7 @@ string s;
 		t.think = DelayThink;
 		t.enemy = activator;
 		t.message = self.message;
+		t.messagestr = self.messagestr;
 		t.killtarget = self.killtarget;
 		t.target = self.target;
 		t.nexttarget = self.nexttarget;
@@ -414,9 +416,12 @@ string s;
 //
 // print the message
 //
-	if(activator.classname == "player" && self.message != 0)
+	if(activator.flags&FL_CLIENT && (self.message || self.messagestr != ""))
 	{
-		s = getstring(self.message);
+		if (self.messagestr != "")			//SoC: triggers can use messagestr for raw string instead of using an index for strings.txt
+			s = self.messagestr;
+		else
+			s = getstring(self.message);
 		centerprint (activator, s);
 		if(!self.noise)
 			sound (activator, CHAN_VOICE, "misc/comm.wav", 1, ATTN_NORM);
@@ -507,20 +512,6 @@ string s;
 				self.count = self.frags;
 				self.items = 0;
 			}
-			else if (other.classname == "trigger_kill")
-			{	//ws: code adapted from commented-out entity trigger_deathtouch
-				if(other.th_die)
-					self.think=other.th_die;
-				else if (self.classname=="breakable_brush")
-					self.use();
-				else if(self.th_die)
-					self.think=self.th_die;
-				else if(self.health)
-					self.think=chunk_death;
-				else
-					self.think=SUB_Remove;
-				thinktime self : 0.05;
-			}
 			else if (self.use != SUB_Null&&!self.inactive)
 			{	//Else here because above trigger types should not use it's target
 				if (self.use)
@@ -566,16 +557,23 @@ void (void() thinkst) SUB_CheckRefire =
 };
 */
 
-void SUB_UseWakeTargets()
+void SUB_UseWakeTargets()	//ws: monsters use self.waketarget upon sighting player
 {
 	if (self.waketarget=="")
 		return;
 	
-	string otarget;
+	string otarget, okill;
 	otarget = self.target;
+	okill = self.killtarget;
 	self.target = self.waketarget;
-	SUB_UseTargets();
+	self.killtarget = "";
+	SUB_UseTargets();	//its that simple!
 	self.target = otarget;
+	self.killtarget = okill;
 	self.waketarget = "";	//only use waketarget once!
 }
 
+void SUB_ResetTarget()
+{
+	self.target = self.killtarget = "";
+}

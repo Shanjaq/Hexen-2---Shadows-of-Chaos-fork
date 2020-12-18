@@ -111,7 +111,7 @@ void()sheep_pain;
 void()sheep_lookdown;
 void()sheep_look;
 void()sheep_lookup;
-
+/*
 void restore_monster ()
 {
 //SOUND and MODEL
@@ -122,7 +122,7 @@ void restore_monster ()
 	newmis.health=self.max_health;
 	remove(self);
 }
-
+*/
 void sheep_sound (float vol)
 {
 float r;
@@ -395,8 +395,8 @@ void player_sheep (void)
 {
 float r;
 
-	if(self.th_spawn==SUB_Null)
-		self.th_spawn=player_sheep;
+	if(self.th_init==SUB_Null)
+		self.th_init=player_sheep;
 	else
 	{
 		self.health=self.max_health;
@@ -637,7 +637,7 @@ void Polymorph (entity loser)
 		setorigin(newmis,loser.origin);
 
 //For restoring monster:
-		newmis.th_spawn=loser.th_spawn;
+		newmis.th_init=loser.th_init;
 		newmis.skin=0;
 		newmis.oldskin=loser.skin;
 		newmis.max_health=loser.health;
