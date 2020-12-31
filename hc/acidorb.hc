@@ -326,7 +326,7 @@ relax to ready(Fire delay?  or automatic if see someone?)
 
 void()acidorb_ready_power;
 void()acidorb_ready_normal;
-void() Suc_Aorb_Fire;
+void(float rightclick) Suc_Aorb_Fire;
 
 void acidorb_fire (void)
 {

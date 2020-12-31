@@ -42,6 +42,8 @@ $frame select95     select96     select97     select98     select99
 
 float BLRAIN_CHARGE = 8;
 
+void() succ_scratch;
+
 void bloodmissile_impact_effect()
 {
 	starteffect(CE_BLDRN_EXPL, self.origin-self.movedir*6,'0 0 0', HX_FRAME_TIME);

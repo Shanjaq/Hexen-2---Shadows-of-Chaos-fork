@@ -776,7 +776,7 @@ void skullwiz_blinkin(void)
 		//restore monster effects
 		ApplyMonsterBuffEffect(self);
 		
-		self.counter = time+1;			/ws: dont teleport again immediately, give player a little time to retaliate
+		self.counter = time+1;			//ws: dont teleport again immediately, give player a little time to retaliate
 		self.glyph_finished = time+1;	//also dont immediately revive corpses
 		
 		skullwiz_run();

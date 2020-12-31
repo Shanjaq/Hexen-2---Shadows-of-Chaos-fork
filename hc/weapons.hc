@@ -9,6 +9,8 @@ void(vector org, vector vel, float damage,entity victim) SpawnPuff;
 void() UseInventoryItem;
 void() ImpulseCommands;
 
+void() acidorb_select;
+
 //============================================================================
 
 vector() wall_velocity =
