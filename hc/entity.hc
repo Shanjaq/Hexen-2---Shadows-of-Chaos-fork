@@ -318,6 +318,44 @@ void end_sys_fields;
 		float raven_cnt;		// Number of raven's this guys has in the world
 		float newclass;			// If doing a quick class change
 		float sheep_call;
+// Peanut ALL NEW CODE
+		float mage;
+		float elemana;
+		float menuhand;
+		float menuitem;
+		float handy;
+		float click;
+		float handy;
+		float modding;
+		float trap_count;
+		float menu_time;
+		float Lfinger;
+		float Rfinger;
+		float Lspell;
+		float Rspell;
+		float Lsupport;
+		float Rsupport;
+		float spelltop;
+		float spellcost;
+		float Lfinger1S, Lfinger2S, Lfinger3S, Lfinger4S, Lfinger5S;
+		float Rfinger1S, Rfinger2S, Rfinger3S, Rfinger4S, Rfinger5S;
+		float Lfinger1Support, Lfinger2Support, Lfinger3Support, Lfinger4Support, Lfinger5Support;
+		float Rfinger1Support, Rfinger2Support, Rfinger3Support, Rfinger4Support, Rfinger5Support;
+		float LfingerC;
+		float RfingerC;
+		float predebt;
+		float debt;
+		float money;
+		float sheep;
+		float arrows;
+		float shopping;
+		float sale;
+		float choice;
+		float selection;
+		float inv_spellmods;
+		float tele_dropped;
+		float charsaved;
+// Peanut End of new code
 	};
 /*	struct // Talking heads
 	{		
@@ -499,6 +537,61 @@ void end_sys_fields;
 		// super_damage becoming negative..
 		vector dest, dest1, dest2;	//9 spots unioned
 	};
+// Peanut ALL NEW CODE
+	//Status Effect Controller
+	struct
+	{
+		//base interval
+		float burn_time;
+		float poison_time;
+		float wet_time;
+		float toxic_time;
+		float paralyze_time;
+		
+		//next interval
+		float burn_next;
+		float poison_next;
+		float toxic_next;
+		
+		//intensity
+		float burn_dmg;
+		float poison_dmg;
+		float toxic_dmg;
+		
+		//stacking
+		float burn_cnt;
+		float poison_cnt;
+		
+		//duration
+		float burn_duration;
+		float poison_duration;
+	};
+	// misc fields
+	struct
+	{
+		float menubar_type;
+		float step1;
+		float step2;
+		float step3;
+		float step4;
+	};
+	// cloud fields
+	struct
+	{
+		float type_index;
+		float cloud_style;
+		float cloud_height;
+		float glow_dest;
+		float glow_last;
+		float glow_delay;
+		float glow_time;
+		float melee_rate_low;
+		float melee_rate_high;
+		float missile_rate_low;
+		float missile_rate_high;
+		float missile_count;
+	};
+// Peanut End of new code
 };
 
 //Needed to remember set gravity compared to other grav changes
@@ -697,7 +790,7 @@ void end_sys_fields;
 .entity shield;
 .float frozen;		//Can't be a flag, is a counter
 .float oldskin;
-//.void() oldthink;
+.void() oldthink;
 .void() th_weapon;
 .float decap;		//To know if was beheaded, not a flag, set to 2 if
 					//head should explode
@@ -731,7 +824,7 @@ void end_sys_fields;
 .string msg3;			//only used by raven staff
 .string nexttarget;		//For target transferral
 .float gravity;			//Gravity, duh
-//.float upside_down;	unused
+.float upside_down;	//unused
 .float lightvalue1;
 .float lightvalue2;
 .float fadespeed;
@@ -758,7 +851,7 @@ entity	sight_entity;	//So monsters wake up other monsters
 .float anglespeed;
 .float angletime;
 .float movetime;
-//.float hit_z;		unused
+.float hit_z;		//unused
 .float torncount;
 .entity path_last;
 .float dflags;
