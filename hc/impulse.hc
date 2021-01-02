@@ -7,6 +7,7 @@ void player_level_cheat(void);
 void player_experience_cheat(void);
 void Polymorph (entity loser);
 void()sheep_look;
+void (string lastmap)enter_magic_shop;
 //void create_swarm (void);
 
 void wake_sheep ()
@@ -57,6 +58,12 @@ void restore_weapon ()
 		case IT_WEAPON4:
 			self.weaponmodel = "models/purifier.mdl";
 		break;
+		case IT_WEAPON5:
+			self.weaponmodel = "models/gauntlet.mdl";
+		break;
+		case IT_WEAPON6:
+			self.weaponmodel = "models/gauntlet.mdl";
+		break;
 		}
 	}
 	else if (self.playerclass==CLASS_CRUSADER)
@@ -74,6 +81,12 @@ void restore_weapon ()
 		break;
 		case IT_WEAPON4:
 			self.weaponmodel = "models/sunstaff.mdl";
+		break;
+		case IT_WEAPON5:
+			self.weaponmodel = "models/warhamer.mdl";
+		break;
+		case IT_WEAPON6:
+			self.weaponmodel = "models/warhamer.mdl";
 		break;
 		}
 	}
@@ -93,6 +106,12 @@ void restore_weapon ()
 		case IT_WEAPON4:
 			self.weaponmodel = "models/ravenstf.mdl";
 		break;
+		case IT_WEAPON5:
+			self.weaponmodel = "models/sickle.mdl";
+		break;
+		case IT_WEAPON6:
+			self.weaponmodel = "models/sickle.mdl";
+		break;
 		}
 	}
 	else if (self.playerclass==CLASS_ASSASSIN)
@@ -111,6 +130,12 @@ void restore_weapon ()
 		case IT_WEAPON4:
 			self.weaponmodel = "models/scarabst.mdl";
 		break;
+		case IT_WEAPON5:
+			self.weaponmodel = "models/punchdgr.mdl";
+		break;
+		case IT_WEAPON6:
+			self.weaponmodel = "models/punchdgr.mdl";
+		break;
 		}
 	}
 	else if (self.playerclass==CLASS_SUCCUBUS)
@@ -128,6 +153,12 @@ void restore_weapon ()
 		break;
 		case IT_WEAPON4:
 			self.weaponmodel = "models/sucwp4.mdl";
+		break;
+		case IT_WEAPON5:
+			self.weaponmodel = "models/sucwp1.mdl";
+		break;
+		case IT_WEAPON6:
+			self.weaponmodel = "models/sucwp1.mdl";
 		break;
 		}
 	}
@@ -331,6 +362,9 @@ void() ImpulseCommands =
 	float total;
 	string printnum;
 
+	if (self.sale == 0)
+		self.choice = 0;
+
 	if(self.flags2&FL_CHAINED&&self.impulse!=23)
 		return;
 	
@@ -345,7 +379,12 @@ void() ImpulseCommands =
 			self.button1 = 0;
 	}
 
-	if (self.impulse == 9&&skill<3)
+	if ( ((self.impulse >= 1.00000) && (self.impulse <= 10.00000) && (self.shopping == 1)) )
+	{
+		dprint("BARF32\n");
+		self.selection = self.impulse;
+	}
+	else if (self.impulse == 9&&skill<3)
 		CheatCommand ();
 	else if(self.impulse==177)//Make BBOX model
 		if(self.movechain.model=="models/playrbox.mdl")
@@ -649,6 +688,215 @@ void() ImpulseCommands =
 			search = nextent(search);
 		}
 	}*/
+// Peanut ALL NEW CODE
+	else if (self.impulse == 51)
+	{
+		if (!deathmatch) {
+			//	enter_magic_shop(mapname);
+			magic_shop_portal();
+		}
+	}
+	else if (self.impulse == 53)
+	{
+		check_money ( );
+	}
+	else if (self.impulse == 54)
+	{
+		test_status(STATUS_PARALYZE);
+	}
+	else if (self.impulse == 55)
+	{
+		self.mage = 1;
+		self.elemana = self.max_mana;
+		self.Lfinger1S = ceil(random(0.5, 36));
+		self.Lfinger2S = ceil(random(0.5, 36));
+		self.Lfinger3S = ceil(random(0.5, 36));
+		self.Lfinger4S = ceil(random(0.5, 36));
+		self.Lfinger5S = ceil(random(0.5, 36));
+
+		self.Rfinger1S = ceil(random(0.5, 36));
+		self.Rfinger2S = ceil(random(0.5, 36));
+		self.Rfinger3S = ceil(random(0.5, 36));
+		self.Rfinger4S = ceil(random(0.5, 36));
+		self.Rfinger5S = ceil(random(0.5, 36));
+
+		self.Lfinger1Support = 0;
+		self.Lfinger2Support = 0;
+		self.Lfinger3Support = 0;
+		self.Lfinger4Support = 0;
+		self.Lfinger5Support = 0;
+
+		self.Rfinger1Support = 0;
+		self.Rfinger2Support = 0;
+		self.Rfinger3Support = 0;
+		self.Rfinger4Support = 0;
+		self.Rfinger5Support = 0;
+		spells_compute(self);
+	}
+	else if (self.impulse == 57)
+	{
+		if (self.mage == 1) {
+			if ((self.handy == 0) || (self.handy == 1)) {
+				if (self.handy == 0) {
+					if (self.Lfinger < 4) {
+						self.Lfinger += 1;
+					} else {
+						self.Lfinger = 0;
+					}
+				}
+				if (self.handy == 1) {
+					if (self.Rfinger > 0) {
+						self.Rfinger -= 1;
+					} else {
+						self.Rfinger = 4;
+					}
+				}
+				spells_compute(self);
+				
+				if (self.handy == 0)
+					self.LfingerC = time + self.spelltop;
+				else if (self.handy == 1)
+					self.RfingerC = time + self.spelltop;
+			}
+		} else {
+			return;
+		}
+	}
+	else if (self.impulse == 58)
+	{
+		if (self.mage == 1) {
+			if ((self.handy == 0) || (self.handy == 1)) {
+				if (self.handy == 0) {
+					if (self.Lfinger > 0) {
+						self.Lfinger -= 1;
+					} else {
+						self.Lfinger = 4;
+					}
+				}
+				if (self.handy == 1) {
+					if (self.Rfinger < 4) {
+						self.Rfinger += 1;
+					} else {
+						self.Rfinger = 0;
+					}
+				}
+				spells_compute(self);
+				
+				if (self.handy == 0)
+					self.LfingerC = time + self.spelltop;
+				else if (self.handy == 1)
+					self.RfingerC = time + self.spelltop;
+			}
+		} else {
+			return;
+		}
+	}
+	else if (self.impulse == 59)
+	{
+		if (self.mage == 1) {
+			if ((self.handy == 0) && (time < self.menu_time))
+			{
+				self.handy = 2;
+				if ((self.Lsupport & SUPPORT_RADIUS) && (time > (self.LfingerC - ((self.spelltop * 0.36250)))))
+					self.LfingerC = time + (self.spelltop * 0.36250);
+			}
+			else
+			{
+				self.handy = 0;
+				spells_compute(self);
+			}
+			spell_marker(0, self.Lfinger);
+			
+			if ((self.Lspell == 19) || (self.Lspell == 25) || (self.Lspell == 2)) {
+				if (self.Lspell == 19) {
+					self.click = 1;
+					windball_spawn();
+				}
+				if (self.Lspell == 2) {
+					self.click = 1;
+					light_shell();
+				}
+				if (self.Lspell == 25) {
+					self.handy = 2;
+				}
+			}
+		} else {
+			return;
+		}
+	}
+	else if (self.impulse == 60)
+	{
+		if (self.mage == 1) {
+			if ((self.handy == 1) && (time < self.menu_time))
+			{
+				self.handy = 3; 
+				if ((self.Rsupport & SUPPORT_RADIUS) && (time > (self.RfingerC - ((self.spelltop * 0.36250)))))
+					self.RfingerC = time + (self.spelltop * 0.36250);
+			}
+			else
+			{
+				self.handy = 1;
+				spells_compute(self);
+			}
+			spell_marker(1, self.Rfinger);
+			
+			if ((self.Rspell == 19) || (self.Rspell == 25) || (self.Rspell == 2)) {
+				if (self.Rspell == 19) {
+					self.click = 1;
+					windball_spawn();
+				}
+				if (self.Rspell == 25) {
+					self.handy = 3; 
+				}
+				if (self.Rspell == 2) {
+					self.click = 1;
+					light_shell();
+				}
+			}
+		} else {
+			return;
+		}
+	}
+	else if (self.impulse == 63)
+	{
+		self.click = 0;
+
+		if (self.handy == 2)
+		{
+			if ((self.Lsupport & SUPPORT_RADIUS) && (time > (self.LfingerC - ((self.spelltop * 0.36250)))))
+			{
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+						spellmod_install();
+					else
+						spellfire();
+					
+					self.LfingerC = time + self.spelltop;
+				}
+			}
+			
+			self.handy = 0;
+		}
+		if (self.handy == 3)
+		{
+			if ((self.Rsupport & SUPPORT_RADIUS) && (time > (self.RfingerC - ((self.spelltop * 0.36250)))))
+			{
+				if (self.predebt == 0)
+				{
+					if (self.modding)
+						spellmod_install();
+					else
+						spellfire();
+					
+					self.RfingerC = time + self.spelltop;
+				}
+			}
+			
+			self.handy = 1;
+		}
+	}
+// Peanut End of new code
 	else if (self.impulse >= 100 && self.impulse <= 115)
 	{
 		Inventory_Quick(self.impulse - 99);
@@ -757,7 +1005,7 @@ void() ImpulseCommands =
 	
 	switch (self.impulse)
 	{
-	case 1..4:
+	case 1..8:
 		W_ChangeWeapon();
 	break;
 	case 10:

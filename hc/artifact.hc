@@ -12,6 +12,8 @@
 void() SUB_regen;
 void() StartItem;
 void ring_touch(void);
+float(entity forwhom, float themod) spellmod_give;
+void(entity forent, float status_effect) remove_status;
 
 void artifact_touch()
 {
@@ -151,12 +153,41 @@ void artifact_touch()
 		else
 			other.cnt_invincibility += 1;
 	}
+	else if(self.netname == STR_ACCELERATOR)
+	{
+		if (spellmod_give(other, SUPPORT_CASTSPEED))
+			return;
+	}
+	else if(self.netname == STR_PRISM)
+	{
+		if (spellmod_give(other, SUPPORT_MULTI))
+			return;
+	}
+	else if(self.netname == STR_AMPLIFIER)
+	{
+		if (spellmod_give(other, SUPPORT_DAMAGE))
+			return;
+	}
+	else if(self.netname == STR_MAGNIFIER)
+	{
+		if (spellmod_give(other, SUPPORT_RADIUS))
+			return;
+	}
+	else if(self.netname == STR_TRAP)
+	{
+		if (spellmod_give(other, SUPPORT_TRAP))
+			return;
+	}
 	else if(self.classname == "art_sword_and_crown"&&other.team==2)
 	{
 		sound(self,CHAN_AUTO,"crusader/lghtn2.wav",1,ATTN_NONE);
 		centerprint(other,"You are victorious!\n");
 		bprint(other.netname);
 		bprint(" has captured the Crown!\n");
+	}
+
+	if (other.predebt == 1) {
+		other.debt += item_value[self.inventory];
 	}
 
 	amount = random();
@@ -285,6 +316,18 @@ void spawn_artifact (float artifact,float respawnflag)
 		GenerateArtifactModel("models/a_shbost.mdl",STR_SUPERHEALTHBOOST,respawnflag);
 	else if (artifact == ARTIFACT_FLIGHT)
 		GenerateArtifactModel("models/ringft.mdl",STR_FLIGHT,respawnflag);
+	else if (artifact == ARTIFACT_SPELL_ACCELERATOR)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_ACCELERATOR, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_PRISM)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_PRISM, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_AMPLIFIER)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_AMPLIFIER, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_MAGNIFIER)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_MAGNIFIER, respawnflag);
+	else if (artifact == ARTIFACT_SPELL_TRAP)
+		GenerateArtifactModel ( "models/a_spellmod.mdl", STR_TRAP, respawnflag);
+	
+	self.inventory = artifact;
 }
 
 
@@ -399,6 +442,9 @@ void use_healthboost()
 		self.flags2(-)FL2_POISONED;
 		centerprint(self,"The poison has been cleansed from your blood...\n");
 	}
+	
+	if (self.status_effects & STATUS_POISON)
+		remove_status(self, STATUS_POISON);
 }
 
 
@@ -537,8 +583,12 @@ void art_blastradius()
 
 void UseManaBoost()
 {
+	if ((self.bluemana == self.max_mana) && (self.greenmana == self.max_mana) && (self.elemana == self.max_mana))
+	return;
+	sound ( self, CHAN_BODY, "misc/whoosh.wav", 1.00000, ATTN_NORM);	
 	self.bluemana  = self.max_mana;
 	self.greenmana = self.max_mana;
+	self.elemana = self.max_mana;
 
 	self.cnt_mana_boost -= 1;
 }
@@ -687,6 +737,38 @@ void art_sword_and_crown()
 
 void item_spawner_use(void)
 {
+	entity the_item, oldself;
+	
+	if (self.spawnflags & 1)
+	{
+		the_item = spawn();
+		setorigin(the_item, self.origin);
+		the_item.cnt_torch = self.cnt_torch;
+		the_item.cnt_h_boost = self.cnt_h_boost;
+		the_item.cnt_sh_boost = self.cnt_sh_boost;
+		the_item.cnt_mana_boost = self.cnt_mana_boost;
+		the_item.cnt_teleport = self.cnt_teleport;
+		the_item.cnt_tome = self.cnt_tome;
+		the_item.cnt_summon = self.cnt_summon;
+		the_item.cnt_invisibility = self.cnt_invisibility;
+		the_item.cnt_glyph = self.cnt_glyph;
+		the_item.cnt_haste = self.cnt_haste;
+		the_item.cnt_blast = self.cnt_blast;
+		the_item.cnt_polymorph = self.cnt_polymorph;
+		the_item.cnt_flight = self.cnt_flight;
+		the_item.cnt_cubeofforce = self.cnt_cubeofforce;
+		the_item.cnt_invincibility = self.cnt_invincibility;
+		the_item.ring_flight = self.ring_flight;
+		the_item.ring_water = self.ring_water;
+		the_item.ring_turning = self.ring_turning;
+		the_item.ring_regeneration = self.ring_regeneration;
+		
+		oldself = self;
+		self = the_item;
+		DropBackpack();
+		self = oldself;
+	}
+	else
 	DropBackpack();
 }
 

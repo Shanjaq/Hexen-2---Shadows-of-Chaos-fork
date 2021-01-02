@@ -482,7 +482,7 @@ string s;
 //
 // kill the killtargets
 //
-	if(self.killtarget!="")
+	if(self.killtarget && self.killtarget!="")
 	{
 		t = world;
 		do
@@ -521,7 +521,7 @@ string s;
 // fire targets
 //
 	self.style=0;
-	if (self.target != "")
+	if (self.target && self.target!="")
 	{
 		act = activator;
 		t = world;

@@ -328,6 +328,9 @@ void max_playermana (void)
 
 	if (other.greenmana > other.max_mana)
 		other.greenmana = other.max_mana;
+	
+	if (other.elemana > other.max_mana)
+		other.elemana = other.max_mana;
 }
 
 
@@ -678,7 +681,10 @@ void mana_touch(void)
 	if ((self.classname == "item_mana_blue") && (other.bluemana >= other.max_mana))
 		return;
 
-	if ((self.classname == "item_mana_both") && (other.bluemana >= other.max_mana) && (other.greenmana >= other.max_mana))
+	if ((self.classname == "item_mana_yellow") && (other.elemana >= other.max_mana))
+		return;
+	
+	if ((self.classname == "item_mana_both") && (other.bluemana >= other.max_mana) && (other.greenmana >= other.max_mana) && (other.elemana >= other.max_mana))
 		return;
 
 	sprint(other, STR_YOUHAVETHE);
@@ -692,10 +698,13 @@ void mana_touch(void)
 		other.greenmana += self.count;
 	else if (self.classname == "item_mana_blue")
 		other.bluemana += self.count;
+	else if (self.classname == "item_mana_yellow")
+		other.elemana += self.count;
 	else 
 	{
 		other.greenmana += self.count;
 		other.bluemana += self.count;
+		other.elemana += self.count;
 	}
 
 	max_playermana();
@@ -714,12 +723,21 @@ void mana_touch(void)
 
 void spawn_item_mana_green(float amount)
 {
-	setmodel (self, "models/i_gmana.mdl");
+	if (random() < 0.45000)
+	{
+		setmodel ( self, "models/i_gmana.mdl");
+		self.classname = "item_mana_green";
+		self.netname = STR_GREENMANA;
+	}
+	else
+	{
+		setmodel ( self, "models/i_ymana.mdl");
+		self.classname = "item_mana_yellow";
+		self.netname = STR_YELLOWMANA;
+	}
 	self.touch = mana_touch;
 	setsize (self, '0 0 0', '0 0 0');
 	self.hull=HULL_POINT;
-	self.classname = "item_mana_green";
-	self.netname = STR_GREENMANA;
 	self.count=amount;
 	StartItem ();
 }
@@ -746,13 +764,22 @@ void item_mana_green (void)
 
 void spawn_item_mana_blue(float amount)
 {
+	if (random() < 0.45000)
+	{
+		setmodel ( self, "models/i_bmana.mdl");
+		self.classname = "item_mana_blue";
+		self.netname = STR_BLUEMANA;
+	}
+	else
+	{
+		setmodel ( self, "models/i_ymana.mdl");
+		self.classname = "item_mana_yellow";
+		self.netname = STR_YELLOWMANA;
+	}
 	self.touch = mana_touch;
-	setmodel (self, "models/i_bmana.mdl");
 	setsize (self, '0 0 0', '0 0 0');
 	self.hull=HULL_POINT;
-	self.classname = "item_mana_blue";
 	self.count=amount;
-	self.netname = STR_BLUEMANA;
 	StartItem ();
 }
 
@@ -1556,6 +1583,30 @@ float total;
 	item.spawn_health = self.spawn_health;
 
 
+	if (self.ring_flight > 0)
+	{
+		total += 1;
+		item.ring_flight = self.ring_flight;
+	}
+
+	if (self.ring_water > 0)
+	{
+		total += 1;
+		item.ring_water = self.ring_water;
+	}
+
+	if (self.ring_turning > 0)
+	{
+		total += 1;
+		item.ring_turning = self.ring_turning;
+	}
+
+	if (self.ring_regeneration > 0)
+	{
+		total += 1;
+		item.ring_regeneration = self.ring_regeneration;
+	}
+
 	if (!total && !item.bluemana && !item.greenmana && !item.spawn_health) 
 		if(self.classname!="player")
 			total=RandomMonsterGoodies();
@@ -1681,6 +1732,26 @@ float total;
 		else if (item.armor_helmet)
 		{
 			spawn_item_armor_helmet();
+		}
+		else if (item.ring_water)
+		{
+			self.classname = "Ring_WaterBreathing";
+			Ring_Init ( "models/ringwb.mdl", STR_RINGWATERBREATHING);
+		}
+		else if (item.ring_flight)
+		{
+			self.classname = "Ring_Flight";
+			Ring_Init ( "models/ringft.mdl", STR_RINGFLIGHT);
+		}
+		else if (item.ring_regeneration)
+		{
+			self.classname = "Ring_Regeneration";
+			Ring_Init ( "models/ringre.mdl", STR_RINGREGENERATION);
+		}
+		else if (item.ring_turning)
+		{
+			self.classname = "Ring_Turning";
+			Ring_Init ( "models/ringtn.mdl", STR_RINGTURNING);
 		}
 		else
 		{

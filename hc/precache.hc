@@ -21,6 +21,7 @@ void() W_Precache =
 	//why are these here?
 	precache_model4 ("models/ball.mdl");	//magicmis, icemace
 	precache_model ("models/star.mdl");	//lightwp, magicmis
+	Precache_Magic();
 	
 	precache_model ("gfx/puff.spr");
 	precache_model ("models/ball.mdl");

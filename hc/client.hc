@@ -10,6 +10,7 @@ void (vector org, entity death_owner) spawn_tdeath;
 void() DecrementSuperHealth;
 void CheckRings (void);
 void(entity client) ResetInventory;
+void () multiply_monsters;
 
 float EXIT_RESETINV = 16;		//ws: trigger_changelevel spawnflag
 
@@ -344,6 +345,9 @@ entity found;
 	if (other.classname != "player")//||(!infront_of_ent(self,other)))
 		return;
 
+	if ( (other.classname != "player") || (other.shopping == 1) )
+		return;
+
 	/* noexit is only for dm - from Maddes' QuakeC patches: */
 	if (deathmatch && ((cvar("noexit") == 1) || (cvar("noexit") == 2)))
 	{
@@ -562,10 +566,24 @@ entity() SelectSpawnPoint =
 	float  pcount;
 	float ok;
 
+	if ((multim == 0.00000) && (!deathmatch))
+	{
+		multiply_monsters();
+		multim = 1.00000;
+		dprint("BARF25\n");
+	}
 														 
+	make_mage(self);
 												   
+	//shan place shop return portal
+	if (mapname == "peanutshop")
+		magic_shop_portal();
 		  
-			  
+	if (self.tele_dropped == 1) {
+		self.tele_dropped = 0;
+	}
+	self.onfire = 1;
+	self.magic_finished = (time + 0.2);
 
 // choose a info_player_deathmatch point
 	if(self.newclass)
@@ -1085,6 +1103,11 @@ entity spot;
 
 	spot = SelectSpawnPoint ();
 	setorigin(self, spot.origin + '0 0 1');
+	if (self.blizzcount == 1) {
+		setorigin(self, (self.pos2 + '0.00000 0.00000 1.00000'));
+		sprint(self, vtos(self.pos2));
+		self.blizzcount = 0;
+	}
 	self.angles = spot.angles;
 	self.fixangle = TRUE;		// turn this way immediately
 
